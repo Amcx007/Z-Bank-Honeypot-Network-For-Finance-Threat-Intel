@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020408;
+            --card: #070d14;
+            --border: rgba(96,165,250,0.12);
+            --border2: rgba(96,165,250,0.22);
+            --accent: #60a5fa;
+            --accent-dim: rgba(96,165,250,0.08);
+            --muted: rgba(255,255,255,0.35);
+            --red: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background grid */
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(96,165,250,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(96,165,250,0.025) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+        }
+        .bg-glow {
+            position: fixed;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 65%);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .card {
+            position: relative; z-index: 1;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 48px 44px;
+            width: 420px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(96,165,250,0.05);
+        }
+
+        .card-top {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 36px;
+        }
+        .shield-icon {
+            width: 44px; height: 44px;
+            background: var(--accent-dim);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .card-title-group { }
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px; font-weight: 800;
+            color: white; letter-spacing: -0.3px;
+        }
+        .card-sub {
+            font-size: 12px; color: var(--muted); margin-top: 2px;
+        }
+
+        .access-level {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(96,165,250,0.06);
+            border: 1px solid rgba(96,165,250,0.14);
+            border-radius: 8px; padding: 10px 14px;
+            font-size: 12px; color: var(--accent);
+            margin-bottom: 26px;
+        }
+        .access-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+        .error-box {
+            background: rgba(239,68,68,0.07);
+            border: 1px solid rgba(239,68,68,0.18);
+            border-radius: 8px; padding: 10px 14px;
+            font-size: 13px; color: #fca5a5;
+            margin-bottom: 18px;
+            display: flex; gap: 8px; align-items: center;
+        }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; font-size: 11px; font-weight: 600;
+            color: var(--muted); text-transform: uppercase;
+            letter-spacing: 1.2px; margin-bottom: 8px;
+        }
+        .form-group input {
+            width: 100%; padding: 12px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; font-size: 14px; color: white;
+            outline: none; transition: border-color 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input::placeholder { color: rgba(255,255,255,0.2); }
+        .form-group input:focus { border-color: rgba(96,165,250,0.4); }
+
+        .btn-login {
+            width: 100%; padding: 13px;
+            background: var(--accent); color: #020408;
+            border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: all 0.2s; margin-top: 4px;
+            letter-spacing: 0.3px;
+        }
+        .btn-login:hover { background: #93c5fd; transform: translateY(-1px); }
+        .btn-login:active { transform: translateY(0); }
+
+        .card-footer {
+            margin-top: 28px; padding-top: 22px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-between;
+            align-items: center;
+        }
+        .footer-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px; font-weight: 800;
+            letter-spacing: 3px; color: rgba(255,255,255,0.2);
+        }
+        .footer-link {
+            font-size: 12px; color: rgba(255,255,255,0.25);
+            text-decoration: none; transition: color 0.2s;
+        }
+        .footer-link:hover { color: var(--accent); }
+
+        .notice {
+            margin-top: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; color: rgba(255,255,255,0.15);
+            text-align: center; line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <div class="card">
+        <div class="card-top">
+            <div class="shield-icon">🛡️</div>
+            <div class="card-title-group">
+                <div class="card-title">Admin Panel</div>
+                <div class="card-sub">Z Bank System Administration</div>
+            </div>
+        </div>
+
+        <div class="access-level">
+            <div class="access-dot"></div>
+            Access Level: ADMINISTRATOR — Full System Control
+        </div>
+
+        {% if error %}
+        <div class="error-box">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/admin/login">
+            <div class="form-group">
+                <label>Admin Password</label>
+                <input type="password" name="password" placeholder="Enter admin password" autofocus/>
+            </div>
+            <button type="submit" class="btn-login">Access Admin Panel →</button>
+        </form>
+
+        <div class="card-footer">
+            <span class="footer-logo">Z BANK</span>
+            <a href="/" class="footer-link">← Back to Portal</a>
+        </div>
+
+        <div class="notice">
+            RESTRICTED ACCESS · AUTHORIZED PERSONNEL ONLY<br>
+            ALL ACCESS ATTEMPTS ARE MONITORED AND LOGGED
+        </div>
+    </div>
+</body>
+</html>

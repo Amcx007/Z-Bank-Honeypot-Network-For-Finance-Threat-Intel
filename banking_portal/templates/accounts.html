@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — Accounts</title>
+    <!-- Intentional: user-id exposed for IDOR demonstration -->
+    <meta name="user-id" content="{{ user.id }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --black:#050505;--card:#0f0f0f;--card2:#141414;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--muted:rgba(255,255,255,0.38);--muted2:rgba(255,255,255,0.18);--accent:#c8f135;--accent-dim:rgba(200,241,53,0.1);--green:#22c55e;--red:#ef4444; }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--black);color:#f0f0f0;min-height:100vh;-webkit-font-smoothing:antialiased;}
+        ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#222;border-radius:4px;}
+        .navbar{position:sticky;top:0;background:rgba(5,5,5,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);padding:16px 48px;display:flex;justify-content:space-between;align-items:center;z-index:100;}
+        .nav-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:4px;color:white;text-decoration:none;}
+        .nav-center{display:flex;gap:2px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:4px;}
+        .nav-center a{padding:8px 18px;border-radius:100px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);text-decoration:none;transition:all 0.2s;white-space:nowrap;}
+        .nav-center a:hover{color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.06);}
+        .nav-center a.active{background:rgba(255,255,255,0.1);color:white;}
+        .nav-right{display:flex;align-items:center;gap:12px;}
+        .nav-avatar{width:34px;height:34px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none;transition:all 0.2s;}
+        .nav-avatar:hover{background:rgba(255,255,255,0.13);}
+        .nav-logout{padding:8px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;color:rgba(255,255,255,0.45);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;}
+        .nav-logout:hover{color:white;border-color:rgba(255,255,255,0.18);}
+        .page{padding:44px 48px;max-width:1200px;margin:0 auto;}
+        .page-header{margin-bottom:36px;opacity:0;animation:fadeUp 0.5s ease 0.05s forwards;}
+        .page-tag{display:inline-flex;align-items:center;gap:7px;background:var(--accent-dim);border:1px solid rgba(200,241,53,0.18);padding:5px 14px;border-radius:100px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:14px;}
+        .page-tag .dot{width:5px;height:5px;background:var(--accent);border-radius:50%;}
+        .page-header h1{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-0.5px;color:white;margin-bottom:6px;}
+        .page-header p{font-size:14px;color:var(--muted);}
+        .balance-banner{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:30px 32px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:hidden;opacity:0;animation:fadeUp 0.5s ease 0.1s forwards;}
+        .balance-banner::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent) 0%,rgba(200,241,53,0.2) 60%,transparent 100%);}
+        .balance-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+        .balance-amount{font-size:40px;font-weight:700;color:white;letter-spacing:-1.5px;line-height:1;margin-bottom:10px;}
+        .balance-change{font-size:13px;font-weight:500;color:var(--green);}
+        .balance-stats{display:flex;gap:12px;}
+        .bstat{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px 22px;text-align:center;min-width:110px;}
+        .bstat-val{font-size:20px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;}
+        .bstat-val.g{color:var(--green);}.bstat-val.r{color:var(--red);}.bstat-val.a{color:var(--accent);}
+        .bstat-lbl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+        .accounts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+        .acc-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;cursor:pointer;transition:all 0.25s ease;position:relative;overflow:hidden;opacity:0;}
+        .acc-card:nth-child(1){animation:fadeUp 0.5s ease 0.15s forwards;}
+        .acc-card:nth-child(2){animation:fadeUp 0.5s ease 0.22s forwards;}
+        .acc-card:nth-child(3){animation:fadeUp 0.5s ease 0.29s forwards;}
+        .acc-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0.7;}
+        .acc-card.savings::after{background:var(--accent);}
+        .acc-card.current::after{background:rgba(255,255,255,0.25);}
+        .acc-card.credit::after{background:var(--red);}
+        .acc-card:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-3px);box-shadow:0 20px 44px rgba(0,0,0,0.45);}
+        .acc-card.selected{border-color:rgba(200,241,53,0.28);background:#111;}
+        .acc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+        .acc-type{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;}
+        .acc-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+        .acc-num{font-size:12px;font-weight:400;color:rgba(255,255,255,0.25);letter-spacing:1.5px;margin-bottom:12px;}
+        .acc-balance{font-size:28px;font-weight:700;letter-spacing:-0.8px;color:white;margin-bottom:4px;line-height:1;}
+        .acc-balance-sub{font-size:12px;color:var(--muted);}
+        .acc-divider{height:1px;background:var(--border);margin:16px 0;}
+        .acc-footer{display:flex;justify-content:space-between;}
+        .acc-stat-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+        .acc-stat-val{font-size:13px;font-weight:600;color:white;}
+        .acc-stat-val.g{color:var(--green);}.acc-stat-val.a{color:var(--accent);}
+        .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;opacity:0;animation:fadeUp 0.5s ease 0.35s forwards;}
+        .qbtn{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none;color:white;transition:all 0.22s;}
+        .qbtn:hover{border-color:rgba(255,255,255,0.13);background:var(--card2);transform:translateY(-2px);}
+        .qicon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700;}
+        .qicon.ac{background:var(--accent-dim);color:var(--accent);}
+        .qicon.wh{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);}
+        .qlabel{font-size:14px;font-weight:600;margin-bottom:2px;}
+        .qsub{font-size:12px;color:var(--muted);}
+        .two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;opacity:0;animation:fadeUp 0.5s ease 0.42s forwards;}
+        .panel{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;}
+        .panel+.panel{margin-top:14px;}
+        .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+        .ph-title{font-size:15px;font-weight:700;color:white;}
+        .ph-link{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s;}
+        .ph-link:hover{color:white;}
+        .ti{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.03);transition:padding 0.2s;}
+        .ti:last-child{border-bottom:none;}
+        .ti:hover{padding-left:4px;}
+        .ti-icon{width:38px;height:38px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);flex-shrink:0;}
+        .ti-info{flex:1;}
+        .ti-name{font-size:13px;font-weight:500;color:#e8e8e8;margin-bottom:3px;}
+        .ti-meta{font-size:11px;color:var(--muted);}
+        .ti-right{text-align:right;}
+        .ti-amt{font-size:14px;font-weight:600;margin-bottom:3px;}
+        .ti-amt.cr{color:var(--green);}.ti-amt.dr{color:#e8e8e8;}
+        .ti-status{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;display:inline-block;}
+        .ti-status.done{background:rgba(34,197,94,0.08);color:var(--green);}
+        .ti-status.pend{background:rgba(234,179,8,0.08);color:#eab308;}
+        .card-visual{background:linear-gradient(135deg,#161616 0%,#1e1e1e 100%);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:14px;}
+        .cv-num{font-size:12px;color:rgba(255,255,255,0.25);letter-spacing:3px;margin-bottom:16px;}
+        .cv-bottom{display:flex;justify-content:space-between;align-items:center;}
+        .cv-name{font-size:12px;font-weight:600;letter-spacing:1.5px;color:rgba(255,255,255,0.6);text-transform:uppercase;}
+        .cv-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--accent);}
+        .card-mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+        .cms{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px;}
+        .cms-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+        .cms-val{font-size:17px;font-weight:700;}.cms-val.a{color:var(--accent);}
+        .sb-item{margin-bottom:16px;}.sb-item:last-child{margin-bottom:0;}
+        .sb-head{display:flex;justify-content:space-between;font-size:13px;font-weight:500;color:rgba(255,255,255,0.65);margin-bottom:7px;}
+        .sb-track{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;}
+        .sb-fill{height:100%;border-radius:2px;background:var(--accent);transition:width 1.2s ease;}
+        .sb-fill.dim{background:rgba(200,241,53,0.28);}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+        .footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;justify-content:space-between;align-items:center;margin-top:50px;}
+        .footer-copy{font-size:12px;color:var(--muted2);}
+        .footer-links{display:flex;gap:20px;}
+        .footer-links a{font-size:12px;color:var(--muted2);text-decoration:none;transition:color 0.2s;}
+        .footer-links a:hover{color:white;}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-logo">Z BANK</a>
+        <div class="nav-center">
+            <a href="/dashboard">Home</a>
+            <a href="/dashboard#services">Services</a>
+            <a href="/dashboard#about">About Us</a>
+            <a href="/support">Support</a>
+        </div>
+        <div class="nav-right">
+            <a href="/profile" class="nav-avatar">👤</a>
+            <a href="/logout" class="nav-logout">← Logout</a>
+        </div>
+    </nav>
+
+    <div class="page">
+        <div class="page-header">
+            <div class="page-tag"><span class="dot"></span>My Accounts</div>
+            <h1>Account Overview</h1>
+            <p>Welcome back, {{ user.full_name }} — manage your accounts and activity</p>
+        </div>
+
+        <!-- Balance Banner -->
+        <div class="balance-banner">
+            <div>
+                <div class="balance-label">Available Balance</div>
+                <div class="balance-amount">${{ "%.2f"|format(user.balance) }}</div>
+                <div class="balance-change">↑ {{ user.account_type|capitalize }} Account · {{ user.account_number }}</div>
+            </div>
+            <div class="balance-stats">
+                {% set total_credit = namespace(val=0) %}
+                {% set total_debit = namespace(val=0) %}
+                {% for t in transactions %}
+                    {% if t.type == 'credit' %}{% set total_credit.val = total_credit.val + t.amount %}{% endif %}
+                    {% if t.type == 'debit' %}{% set total_debit.val = total_debit.val + t.amount %}{% endif %}
+                {% endfor %}
+                <div class="bstat">
+                    <div class="bstat-val g">+${{ "%.0f"|format(total_credit.val) }}</div>
+                    <div class="bstat-lbl">Income</div>
+                </div>
+                <div class="bstat">
+                    <div class="bstat-val r">-${{ "%.0f"|format(total_debit.val) }}</div>
+                    <div class="bstat-lbl">Expenses</div>
+                </div>
+                <div class="bstat">
+                    <div class="bstat-val a">{{ transactions|length }}</div>
+                    <div class="bstat-lbl">Transactions</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Cards -->
+        <div class="accounts-grid">
+            <!-- Main account -->
+            <div class="acc-card savings selected" onclick="selectCard(this)">
+                <div class="acc-top">
+                    <div class="acc-type">{{ user.account_type|capitalize }} Account</div>
+                    <div class="acc-badge">Active</div>
+                </div>
+                <div class="acc-num">{{ user.account_number }}</div>
+                <div class="acc-balance">${{ "%.2f"|format(user.balance) }}</div>
+                <div class="acc-balance-sub">Available Balance</div>
+                <div class="acc-divider"></div>
+                <div class="acc-footer">
+                    <div>
+                        <div class="acc-stat-label">Account Type</div>
+                        <div class="acc-stat-val">{{ user.account_type|capitalize }}</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div class="acc-stat-label">Transactions</div>
+                        <div class="acc-stat-val g">{{ transactions|length }}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="acc-stat-label">Since</div>
+                        <div class="acc-stat-val">{{ user.member_since }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IDOR exposed card — intentional vulnerability -->
+            <div class="acc-card current" onclick="window.location.href='/profile?id={{ user.id }}'">
+                <div class="acc-top">
+                    <div class="acc-type">Profile</div>
+                    <div class="acc-badge">View</div>
+                </div>
+                <!-- Intentional: ID exposed in UI for IDOR attack surface -->
+                <div class="acc-num">User ID: {{ user.id }}</div>
+                <div class="acc-balance" style="font-size:20px;letter-spacing:-0.5px;">{{ user.full_name }}</div>
+                <div class="acc-balance-sub">Account Holder</div>
+                <div class="acc-divider"></div>
+                <div class="acc-footer">
+                    <div>
+                        <div class="acc-stat-label">Email</div>
+                        <div class="acc-stat-val" style="font-size:11px;">{{ user.email }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards -->
+            <div class="acc-card credit" onclick="window.location.href='/cards'">
+                <div class="acc-top">
+                    <div class="acc-type">Cards</div>
+                    <div class="acc-badge">Manage</div>
+                </div>
+                <div class="acc-num">•••• •••• •••• {{ user.account_number[-4:] if user.account_number else '****' }}</div>
+                <div class="acc-balance" style="color:var(--accent);font-size:22px;">Manage Cards</div>
+                <div class="acc-balance-sub">Debit & Credit Cards</div>
+                <div class="acc-divider"></div>
+                <div class="acc-footer">
+                    <div>
+                        <div class="acc-stat-label">Action</div>
+                        <div class="acc-stat-val">View & Control</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-grid">
+            <a href="/transfer" class="qbtn">
+                <div class="qicon ac">↗</div>
+                <div><div class="qlabel">Transfer</div><div class="qsub">Send money globally</div></div>
+            </a>
+            <a href="/transactions" class="qbtn">
+                <div class="qicon wh">≡</div>
+                <div><div class="qlabel">History</div><div class="qsub">View all transactions</div></div>
+            </a>
+            <a href="/cards" class="qbtn">
+                <div class="qicon wh">◎</div>
+                <div><div class="qlabel">Manage Cards</div><div class="qsub">Settings & limits</div></div>
+            </a>
+            <a href="/support" class="qbtn">
+                <div class="qicon wh">?</div>
+                <div><div class="qlabel">Support</div><div class="qsub">Get help anytime</div></div>
+            </a>
+        </div>
+
+        <!-- Two column -->
+        <div class="two-col">
+            <div class="panel">
+                <div class="ph">
+                    <div class="ph-title">Recent Transactions</div>
+                    <a href="/transactions" class="ph-link">View all →</a>
+                </div>
+                {% if transactions %}
+                    {% for txn in transactions[:6] %}
+                    <div class="ti">
+                        <div class="ti-icon">{{ txn.description[0]|upper }}</div>
+                        <div class="ti-info">
+                            <div class="ti-name">{{ txn.description }}</div>
+                            <div class="ti-meta">{{ txn.timestamp[:10] }} &nbsp;·&nbsp; {{ txn.category }}</div>
+                        </div>
+                        <div class="ti-right">
+                            <div class="ti-amt {{ 'cr' if txn.type == 'credit' else 'dr' }}">
+                                {{ '+' if txn.type == 'credit' else '-' }}${{ "%.2f"|format(txn.amount) }}
+                            </div>
+                            <div class="ti-status {{ 'done' if txn.status == 'completed' else 'pend' }}">
+                                {{ txn.status|capitalize }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">No transactions yet</div>
+                {% endif %}
+            </div>
+
+            <div>
+                <div class="panel" style="margin-bottom:14px;">
+                    <div class="ph">
+                        <div class="ph-title">Primary Card</div>
+                        <span style="font-size:12px;color:var(--accent);font-weight:500;">{{ user.account_type|capitalize }}</span>
+                    </div>
+                    <div class="card-visual">
+                        <div class="cv-num">•••• &nbsp;•••• &nbsp;•••• &nbsp;{{ user.account_number[-4:] if user.account_number else '****' }}</div>
+                        <div class="cv-bottom">
+                            <div class="cv-name">{{ user.full_name }}</div>
+                            <div class="cv-logo">Z</div>
+                        </div>
+                    </div>
+                    <div class="card-mini-stats">
+                        <div class="cms">
+                            <div class="cms-lbl">Balance</div>
+                            <div class="cms-val">${{ "%.0f"|format(user.balance) }}</div>
+                        </div>
+                        <div class="cms">
+                            <div class="cms-lbl">Account</div>
+                            <div class="cms-val a" style="font-size:13px;">{{ user.account_type|capitalize }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="ph">
+                        <div class="ph-title">Spending Breakdown</div>
+                        <span style="font-size:12px;color:var(--muted);">All time</span>
+                    </div>
+                    {% set cat_totals = {} %}
+                    {% set total_spent = namespace(val=0.01) %}
+                    {% for txn in transactions %}
+                        {% if txn.type == 'debit' %}
+                            {% set total_spent.val = total_spent.val + txn.amount %}
+                            {% if txn.category in cat_totals %}
+                                {% set _ = cat_totals.update({txn.category: cat_totals[txn.category] + txn.amount}) %}
+                            {% else %}
+                                {% set _ = cat_totals.update({txn.category: txn.amount}) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if cat_totals %}
+                        {% for cat, amt in cat_totals.items() %}
+                        <div class="sb-item">
+                            <div class="sb-head"><span>{{ cat }}</span><span>${{ "%.2f"|format(amt) }}</span></div>
+                            <div class="sb-track">
+                                <div class="sb-fill {{ '' if loop.first else 'dim' }}" style="width:{{ [(amt / total_spent.val * 100)|int, 100]|min }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">No spending data yet</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-copy">© 2026 Z Bank Financial Services. All rights reserved.</div>
+        <div class="footer-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Support</a></div>
+    </footer>
+
+    <script>
+        function selectCard(el) {
+            document.querySelectorAll('.acc-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+        (function() {
+            var path = window.location.pathname;
+            document.querySelectorAll('.nav-center a').forEach(function(a) {
+                a.classList.remove('active');
+                var href = a.getAttribute('href');
+                if (!href || href.indexOf('#') > 0) return;
+                if (path === href) a.classList.add('active');
+                else if (href !== '/' && path.startsWith(href)) a.classList.add('active');
+            });
+        })();
+    </script>
+</body>
+</html>

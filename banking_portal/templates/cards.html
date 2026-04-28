@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — Cards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #050505;
+            --card: #0f0f0f;
+            --card2: #141414;
+            --border: rgba(255,255,255,0.07);
+            --border2: rgba(255,255,255,0.13);
+            --muted: rgba(255,255,255,0.38);
+            --muted2: rgba(255,255,255,0.18);
+            --accent: #c8f135;
+            --accent-dim: rgba(200,241,53,0.1);
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--black);
+            color: #f0f0f0;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            background: rgba(5,5,5,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 16px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 4px; color: white; text-decoration: none; }
+        .nav-center { display: flex; gap: 2px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px; padding: 4px; }
+        .nav-center a { padding: 8px 18px; border-radius: 100px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.45); text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+        .nav-center a:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
+        .nav-center a.active { background: rgba(255,255,255,0.1); color: white; font-weight: 500; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-avatar { width: 34px; height: 34px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; transition: all 0.2s; }
+        .nav-avatar:hover { background: rgba(255,255,255,0.13); }
+        .nav-logout { padding: 8px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px; color: rgba(255,255,255,0.45); font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s; }
+        .nav-logout:hover { color: white; border-color: rgba(255,255,255,0.18); }
+
+        /* ===== PAGE ===== */
+        .page { padding: 44px 48px; max-width: 1200px; margin: 0 auto; }
+
+        /* Header */
+        .page-header { margin-bottom: 36px; opacity: 0; animation: fadeUp 0.5s ease 0.05s forwards; }
+        .page-tag { display: inline-flex; align-items: center; gap: 7px; background: var(--accent-dim); border: 1px solid rgba(200,241,53,0.18); padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 14px; }
+        .page-tag .dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; color: white; margin-bottom: 6px; }
+        .page-header p { font-size: 14px; color: var(--muted); }
+
+        /* ===== CARD CAROUSEL ===== */
+        .cards-section { margin-bottom: 30px; opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards; overflow: visible; }
+        .cards-scroll::-webkit-scrollbar { display: none; }
+        .cards-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .cards-header h2 { font-size: 16px; font-weight: 700; color: white; }
+        .add-card-btn { display: flex; align-items: center; gap: 8px; padding: 9px 18px; background: rgba(255,255,255,0.05); border: 1px solid var(--border2); border-radius: 100px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; }
+        .add-card-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        .cards-scroll {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            overflow-y: visible;
+            padding: 12px 4px 16px;
+            scrollbar-width: none;
+            margin: -12px -4px -16px;
+        }
+
+        /* Physical card design */
+        .bank-card {
+            width: 340px;
+            height: 200px;
+            border-radius: 18px;
+            padding: 22px 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.35s ease;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .bank-card:hover { transform: translateY(-4px) scale(1.015); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
+        .bank-card.selected { border: 2px solid var(--accent) !important; box-shadow: 0 0 0 4px rgba(200,241,53,0.12), 0 24px 50px rgba(0,0,0,0.5); transform: translateY(-4px) scale(1.015); }
+
+        /* Card themes */
+        .bank-card.dark {
+            background: linear-gradient(140deg, #1c1c1c 0%, #2a2a2a 60%, #1a1a1a 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .bank-card.dark::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 180px; height: 180px;
+            background: radial-gradient(circle, rgba(255,255,255,0.04), transparent 70%);
+            border-radius: 50%;
+        }
+        .bank-card.accent {
+            background: linear-gradient(140deg, #c8f135 0%, #b8e020 60%, #a0cc10 100%);
+        }
+        .bank-card.accent::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 160px; height: 160px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+            border-radius: 50%;
+        }
+        .bank-card.blue {
+            background: linear-gradient(140deg, #0f1f3d 0%, #1a3260 60%, #0d1a33 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .bank-card.blue::before {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 170px; height: 170px;
+            background: radial-gradient(circle, rgba(100,150,255,0.08), transparent 70%);
+            border-radius: 50%;
+        }
+        .bank-card.add-new {
+            background: transparent;
+            border: 2px dashed rgba(255,255,255,0.1);
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .bank-card.add-new:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.02); }
+
+        /* Card row 1: chip + network logo */
+        .card-row1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-chip {
+            width: 40px;
+            height: 30px;
+            border-radius: 6px;
+            position: relative;
+        }
+        .card-chip.gold {
+            background: linear-gradient(135deg, #c9a227 0%, #f5d060 40%, #c9a227 100%);
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.4);
+        }
+        .card-chip.gold::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px; height: 14px;
+            border: 1px solid rgba(180,140,20,0.6);
+            border-radius: 3px;
+        }
+        .card-chip.silver {
+            background: linear-gradient(135deg, #888 0%, #ddd 50%, #888 100%);
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.5);
+        }
+        .card-chip.silver::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px; height: 14px;
+            border: 1px solid rgba(100,100,100,0.5);
+            border-radius: 3px;
+        }
+        .card-chip.dark-chip {
+            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.08) 100%);
+        }
+        .card-chip.dark-chip::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px; height: 14px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 3px;
+        }
+
+        /* Contactless icon */
+        .contactless {
+            font-size: 20px;
+            opacity: 0.4;
+            margin-left: 6px;
+        }
+
+        /* Card row 2: number */
+        .card-number {
+            font-size: 15px;
+            letter-spacing: 4px;
+            font-weight: 500;
+            font-family: 'Syne', sans-serif;
+        }
+        .card-number.light { color: rgba(255,255,255,0.7); }
+        .card-number.dark-text { color: rgba(0,0,0,0.45); }
+
+        /* Card row 3: bottom info */
+        .card-row3 {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .card-left-info { display: flex; flex-direction: column; gap: 2px; }
+        .card-label-small {
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            opacity: 0.5;
+        }
+        .card-label-small.dark-text { color: rgba(0,0,0,0.6); }
+        .card-holder {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .card-holder.dark-text { color: rgba(0,0,0,0.7); }
+        .card-right-info { text-align: right; }
+        .card-expiry-val {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .card-expiry-val.dark-text { color: rgba(0,0,0,0.65); }
+
+        /* Network logo */
+        .card-network-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .card-network-logo.light { color: rgba(255,255,255,0.5); }
+        .card-network-logo.dark-text { color: rgba(0,0,0,0.35); }
+
+        /* Type badge - moved to overlay position */
+        .card-type-badge {
+            position: absolute;
+            top: 20px;
+            right: 22px;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .badge-debit-light { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+        .badge-debit-blue { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+        .badge-credit-dark { background: rgba(0,0,0,0.2); color: rgba(0,0,0,0.55); font-weight: 800; }
+
+        .add-new-icon { font-size: 28px; color: rgba(255,255,255,0.2); }
+        .add-new-text { font-size: 13px; font-weight: 500; color: var(--muted); }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; }
+
+        /* ===== PANEL ===== */
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 26px; opacity: 0; }
+        .panel:nth-child(1) { animation: fadeUp 0.5s ease 0.2s forwards; }
+        .panel:nth-child(2) { animation: fadeUp 0.5s ease 0.27s forwards; }
+        .panel + .panel { margin-top: 14px; }
+        .ph { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .ph-title { font-size: 15px; font-weight: 700; color: white; }
+        .ph-sub { font-size: 12px; color: var(--muted); }
+
+        /* Card details */
+        .card-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .card-detail-row:last-child { border-bottom: none; }
+        .cd-label { font-size: 12px; color: var(--muted); font-weight: 400; }
+        .cd-val { font-size: 13px; font-weight: 600; color: #e0e0e0; }
+        .cd-val.g { color: var(--green); }
+        .cd-val.r { color: var(--red); }
+        .cd-val.a { color: var(--accent); }
+
+        /* Toggle controls */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-label { font-size: 14px; font-weight: 500; color: #e0e0e0; margin-bottom: 3px; }
+        .toggle-desc { font-size: 12px; color: var(--muted); }
+        .toggle { width: 44px; height: 24px; border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s; flex-shrink: 0; background: rgba(255,255,255,0.1); }
+        .toggle.on { background: var(--accent); }
+        .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: all 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+        .toggle.on::after { left: 23px; }
+
+        /* Spend limit bar */
+        .limit-bar-bg { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+        .limit-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 1.2s ease; }
+        .limit-bar-fill.warning { background: var(--yellow); }
+        .limit-bar-fill.danger { background: var(--red); }
+
+        /* Quick actions */
+        .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; opacity: 0; animation: fadeUp 0.5s ease 0.15s forwards; }
+        .qbtn { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; text-decoration: none; color: white; transition: all 0.22s; }
+        .qbtn:hover { border-color: rgba(255,255,255,0.13); background: var(--card2); transform: translateY(-2px); }
+        .qicon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; font-family: 'Inter', sans-serif; }
+        .qicon.ac { background: var(--accent-dim); color: var(--accent); }
+        .qicon.re { background: rgba(239,68,68,0.1); color: var(--red); }
+        .qicon.wh { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); }
+        .qicon.ye { background: rgba(234,179,8,0.1); color: var(--yellow); }
+        .qlabel { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+        .qsub { font-size: 11px; color: var(--muted); }
+
+        /* Transactions mini */
+        .ti { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.03); transition: padding 0.2s; }
+        .ti:last-child { border-bottom: none; }
+        .ti:hover { padding-left: 4px; }
+        .ti-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+        .ti-info { flex: 1; }
+        .ti-name { font-size: 13px; font-weight: 500; color: #e0e0e0; margin-bottom: 2px; }
+        .ti-date { font-size: 11px; color: var(--muted); }
+        .ti-amt { font-size: 13px; font-weight: 600; }
+        .ti-amt.cr { color: var(--green); }
+        .ti-amt.dr { color: #e0e0e0; }
+
+        /* Card selector tabs */
+        .card-tabs { display: flex; gap: 8px; margin-bottom: 20px; opacity: 0; animation: fadeUp 0.5s ease 0.12s forwards; flex-wrap: wrap; }
+        .card-tab { padding: 8px 16px; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 7px; }
+        .card-tab.active { background: rgba(255,255,255,0.08); color: white; border-color: var(--border2); }
+        .card-tab:hover:not(.active) { border-color: var(--border2); color: rgba(255,255,255,0.7); }
+        .tab-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        /* Freeze overlay on card */
+        .frozen-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); border-radius: 20px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .frozen-text { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 2px; text-transform: uppercase; }
+
+        /* New card modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 999; align-items: center; justify-content: center; }
+        .modal { background: var(--card); border: 1px solid var(--border2); border-radius: 20px; padding: 36px; width: 420px; animation: popIn 0.3s ease; }
+        .modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: white; margin-bottom: 6px; }
+        .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 26px; }
+        .modal-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+        .modal-option { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 16px; }
+        .modal-option:hover { border-color: rgba(200,241,53,0.3); background: rgba(200,241,53,0.04); }
+        .modal-option.selected { border-color: rgba(200,241,53,0.4); background: rgba(200,241,53,0.06); }
+        .mo-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; flex-shrink: 0; }
+        .mo-title { font-size: 14px; font-weight: 600; color: white; margin-bottom: 3px; }
+        .mo-desc { font-size: 12px; color: var(--muted); }
+        .modal-btns { display: flex; gap: 10px; }
+        .btn-cancel { flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+        .btn-cancel:hover { color: white; }
+        .btn-confirm { flex: 1; padding: 12px; background: white; border: none; border-radius: 10px; color: black; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+        .btn-confirm:hover { background: var(--accent); }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+
+        .footer { border-top: 1px solid var(--border); padding: 22px 48px; display: flex; justify-content: space-between; align-items: center; margin-top: 50px; }
+        .footer-copy { font-size: 12px; color: var(--muted2); }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-links a { font-size: 12px; color: var(--muted2); text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- Add Card Modal -->
+    <div class="modal-overlay" id="addCardModal">
+        <div class="modal">
+            <div class="modal-title">Add New Card</div>
+            <div class="modal-sub">Choose the type of card you want to add</div>
+            <div class="modal-options">
+                <div class="modal-option selected" onclick="selectOption(this)">
+                    <div class="mo-icon">◉</div>
+                    <div>
+                        <div class="mo-title">Virtual Debit Card</div>
+                        <div class="mo-desc">Instant · Free · For online payments</div>
+                    </div>
+                </div>
+                <div class="modal-option" onclick="selectOption(this)">
+                    <div class="mo-icon">▭</div>
+                    <div>
+                        <div class="mo-title">Physical Debit Card</div>
+                        <div class="mo-desc">Delivered in 3–5 days · Free</div>
+                    </div>
+                </div>
+                <div class="modal-option" onclick="selectOption(this)">
+                    <div class="mo-icon">✦</div>
+                    <div>
+                        <div class="mo-title">Credit Card</div>
+                        <div class="mo-desc">Subject to credit approval · Premium</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-confirm" onclick="closeModal()">Apply Now →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-logo">Z BANK</a>
+        <div class="nav-center">
+            <a href="/dashboard">Home</a>
+            <a href="/dashboard#services">Services</a>
+            <a href="/dashboard#about">About Us</a>
+            <a href="/support">Support</a>
+        </div>
+        <div class="nav-right">
+            <a href="/profile" class="nav-avatar">👤</a>
+            <a href="/" class="nav-logout">← Logout</a>
+        </div>
+    </nav>
+
+    <div class="page">
+
+        <!-- Header -->
+        <div class="page-header">
+            <div class="page-tag"><span class="dot"></span>Card Management</div>
+            <h1>My Cards</h1>
+            <p>Manage your debit and credit cards, limits and security settings</p>
+        </div>
+
+        <!-- Cards carousel -->
+        <div class="cards-section">
+            <div class="cards-header">
+                <h2>Your Cards</h2>
+                <button class="add-card-btn" onclick="openModal()">
+                    + Add New Card
+                </button>
+            </div>
+            <div class="cards-scroll">
+
+                <!-- Card 1 - Savings Debit (dark) -->
+                <div class="bank-card dark selected" id="card1" onclick="selectCard(1)">
+                    <div class="card-type-badge badge-debit-light">Debit</div>
+                    <div class="card-row1">
+                        <div class="card-chip gold"></div>
+                    </div>
+                    <div class="card-number light">•••• &nbsp; •••• &nbsp; •••• &nbsp; 4521</div>
+                    <div class="card-row3">
+                        <div class="card-left-info">
+                            <div class="card-label-small" style="color:rgba(255,255,255,0.4);">Card Holder</div>
+                            <div class="card-holder" style="color:rgba(255,255,255,0.85);">John Anderson</div>
+                        </div>
+                        <div class="card-right-info">
+                            <div class="card-label-small" style="color:rgba(255,255,255,0.4);">Expires</div>
+                            <div class="card-expiry-val" style="color:rgba(255,255,255,0.75);">08 / 28</div>
+                        </div>
+                        <div class="card-network-logo light">Z</div>
+                    </div>
+                </div>
+
+                <!-- Card 2 - Credit Card (accent green) -->
+                <div class="bank-card accent" id="card2" onclick="selectCard(2)">
+                    <div class="card-type-badge badge-credit-dark">Credit</div>
+                    <div class="card-row1">
+                        <div class="card-chip silver"></div>
+                    </div>
+                    <div class="card-number dark-text">•••• &nbsp; •••• &nbsp; •••• &nbsp; 3392</div>
+                    <div class="card-row3">
+                        <div class="card-left-info">
+                            <div class="card-label-small dark-text">Card Holder</div>
+                            <div class="card-holder dark-text">John Anderson</div>
+                        </div>
+                        <div class="card-right-info">
+                            <div class="card-label-small dark-text">Expires</div>
+                            <div class="card-expiry-val dark-text">05 / 27</div>
+                        </div>
+                        <div class="card-network-logo dark-text">Z</div>
+                    </div>
+                </div>
+
+                <!-- Card 3 - Current Debit (blue) -->
+                <div class="bank-card blue" id="card3" onclick="selectCard(3)">
+                    <div class="card-type-badge badge-debit-blue">Debit</div>
+                    <div class="card-row1">
+                        <div class="card-chip dark-chip"></div>
+                    </div>
+                    <div class="card-number light">•••• &nbsp; •••• &nbsp; •••• &nbsp; 8873</div>
+                    <div class="card-row3">
+                        <div class="card-left-info">
+                            <div class="card-label-small" style="color:rgba(255,255,255,0.35);">Card Holder</div>
+                            <div class="card-holder" style="color:rgba(255,255,255,0.75);">John Anderson</div>
+                        </div>
+                        <div class="card-right-info">
+                            <div class="card-label-small" style="color:rgba(255,255,255,0.35);">Expires</div>
+                            <div class="card-expiry-val" style="color:rgba(255,255,255,0.65);">12 / 26</div>
+                        </div>
+                        <div class="card-network-logo" style="color:rgba(255,255,255,0.4);">Z</div>
+                    </div>
+                </div>
+
+                <!-- Add new card -->
+                <div class="bank-card add-new" onclick="openModal()">
+                    <div class="add-new-icon">+</div>
+                    <div class="add-new-text">Add New Card</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Card selector tabs -->
+        <div class="card-tabs">
+            <button class="card-tab active" id="tab1" onclick="selectCard(1)">
+                <span class="tab-dot" style="background:#555;"></span>
+                Savings Debit ••4521
+            </button>
+            <button class="card-tab" id="tab2" onclick="selectCard(2)">
+                <span class="tab-dot" style="background:var(--accent);"></span>
+                Credit Card ••3392
+            </button>
+            <button class="card-tab" id="tab3" onclick="selectCard(3)">
+                <span class="tab-dot" style="background:#2a4a7a;"></span>
+                Current Debit ••8873
+            </button>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="quick-grid">
+            <button class="qbtn" onclick="toggleFreeze()">
+                <div class="qicon re" id="freezeIcon">❄</div>
+                <div>
+                    <div class="qlabel" id="freezeLabel">Freeze Card</div>
+                    <div class="qsub">Temporarily block transactions</div>
+                </div>
+            </button>
+            <a href="/transfer" class="qbtn">
+                <div class="qicon ac">↗</div>
+                <div>
+                    <div class="qlabel">Transfer Funds</div>
+                    <div class="qsub">Send money globally</div>
+                </div>
+            </a>
+            <button class="qbtn" onclick="showPIN()">
+                <div class="qicon wh">◎</div>
+                <div>
+                    <div class="qlabel">View PIN</div>
+                    <div class="qsub">Reveal your card PIN</div>
+                </div>
+            </button>
+            <button class="qbtn" onclick="reportLost()">
+                <div class="qicon ye">!</div>
+                <div>
+                    <div class="qlabel">Report Lost</div>
+                    <div class="qsub">Block & request replacement</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Main layout -->
+        <div class="main-layout">
+
+            <!-- Left: Card details + controls -->
+            <div>
+                <!-- Card details -->
+                <div class="panel">
+                    <div class="ph">
+                        <div class="ph-title" id="cardDetailTitle">Savings Debit Card</div>
+                        <span class="ph-sub" id="cardStatus" style="color:var(--green);">● Active</span>
+                    </div>
+
+                    <div class="card-detail-row">
+                        <span class="cd-label">Card Number</span>
+                        <span class="cd-val">•••• •••• •••• 4521</span>
+                    </div>
+                    <div class="card-detail-row">
+                        <span class="cd-label">Card Holder</span>
+                        <span class="cd-val">John Anderson</span>
+                    </div>
+                    <div class="card-detail-row">
+                        <span class="cd-label">Expiry Date</span>
+                        <span class="cd-val">08 / 2028</span>
+                    </div>
+                    <div class="card-detail-row">
+                        <span class="cd-label">Card Type</span>
+                        <span class="cd-val" id="cardTypeDetail">Visa Debit</span>
+                    </div>
+                    <div class="card-detail-row">
+                        <span class="cd-label">Linked Account</span>
+                        <span class="cd-val">Savings •••• 4521</span>
+                    </div>
+                    <div class="card-detail-row">
+                        <span class="cd-label">Daily Limit</span>
+                        <span class="cd-val a" id="cardLimit">$5,000</span>
+                    </div>
+                    <div class="card-detail-row">
+                        <span class="cd-label">This Month Spent</span>
+                        <span class="cd-val r">$2,220.49</span>
+                    </div>
+                    <div class="card-detail-row">
+                        <span class="cd-label">Cashback Earned</span>
+                        <span class="cd-val g">$42.50</span>
+                    </div>
+                </div>
+
+                <!-- Spend limit -->
+                <div class="panel" style="margin-top:14px;">
+                    <div class="ph">
+                        <div class="ph-title">Monthly Spend Limit</div>
+                        <span class="ph-sub">$2,220 / $10,000</span>
+                    </div>
+                    <div class="limit-bar-bg">
+                        <div class="limit-bar-fill" style="width:22%;" id="limitBar"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:var(--muted);">
+                        <span>22% used</span>
+                        <span>$7,780 remaining</span>
+                    </div>
+                </div>
+
+                <!-- Card controls -->
+                <div class="panel" style="margin-top:14px;">
+                    <div class="ph">
+                        <div class="ph-title">Card Controls</div>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-label">Online Payments</div>
+                            <div class="toggle-desc">Allow e-commerce transactions</div>
+                        </div>
+                        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-label">International Transactions</div>
+                            <div class="toggle-desc">Use card outside your country</div>
+                        </div>
+                        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-label">Contactless Payments</div>
+                            <div class="toggle-desc">Tap to pay with NFC</div>
+                        </div>
+                        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-label">ATM Withdrawals</div>
+                            <div class="toggle-desc">Allow cash withdrawals</div>
+                        </div>
+                        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-label">Transaction Alerts</div>
+                            <div class="toggle-desc">SMS notification for every transaction</div>
+                        </div>
+                        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Recent transactions + card stats -->
+            <div>
+                <!-- Card stats -->
+                <div class="panel">
+                    <div class="ph">
+                        <div class="ph-title">Card Statistics</div>
+                        <span class="ph-sub">April 2026</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                            <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Total Spent</div>
+                            <div style="font-size:22px; font-weight:700; color:var(--red); letter-spacing:-0.5px;">$2,220</div>
+                            <div style="font-size:11px; color:var(--muted); margin-top:4px;">↑ 8% vs last month</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                            <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Cashback</div>
+                            <div style="font-size:22px; font-weight:700; color:var(--accent); letter-spacing:-0.5px;">$42.50</div>
+                            <div style="font-size:11px; color:var(--muted); margin-top:4px;">This month</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                            <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Transactions</div>
+                            <div style="font-size:22px; font-weight:700; color:white; letter-spacing:-0.5px;">18</div>
+                            <div style="font-size:11px; color:var(--muted); margin-top:4px;">This month</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                            <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Avg / Day</div>
+                            <div style="font-size:22px; font-weight:700; color:white; letter-spacing:-0.5px;">$74</div>
+                            <div style="font-size:11px; color:var(--muted); margin-top:4px;">Daily average</div>
+                        </div>
+                    </div>
+
+                    <!-- Spending by category -->
+                    <div style="font-size:13px; font-weight:600; color:white; margin-bottom:14px;">Spending by Category</div>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:6px;"><span>Housing</span><span>$1,200 · 54%</span></div>
+                            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px;"><div style="width:54%; height:100%; background:var(--accent); border-radius:2px;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:6px;"><span>Shopping</span><span>$450 · 20%</span></div>
+                            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px;"><div style="width:20%; height:100%; background:rgba(200,241,53,0.4); border-radius:2px;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:6px;"><span>Food & Dining</span><span>$320 · 14%</span></div>
+                            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px;"><div style="width:14%; height:100%; background:rgba(200,241,53,0.3); border-radius:2px;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:6px;"><span>Utilities</span><span>$185 · 8%</span></div>
+                            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px;"><div style="width:8%; height:100%; background:rgba(200,241,53,0.2); border-radius:2px;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:6px;"><span>Subscriptions</span><span>$65 · 3%</span></div>
+                            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px;"><div style="width:3%; height:100%; background:rgba(200,241,53,0.15); border-radius:2px;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent card transactions -->
+                <div class="panel" style="margin-top:14px;">
+                    <div class="ph">
+                        <div class="ph-title">Recent Card Transactions</div>
+                        <a href="/transactions" style="font-size:12px; color:var(--muted); text-decoration:none;">View all →</a>
+                    </div>
+                    <div class="ti">
+                        <div class="ti-icon">A</div>
+                        <div class="ti-info">
+                            <div class="ti-name">Amazon Prime</div>
+                            <div class="ti-date">Apr 21 · Online</div>
+                        </div>
+                        <div class="ti-amt dr">-$14.99</div>
+                    </div>
+                    <div class="ti">
+                        <div class="ti-icon">T</div>
+                        <div class="ti-info">
+                            <div class="ti-name">Transfer — John Smith</div>
+                            <div class="ti-date">Apr 20 · Transfer</div>
+                        </div>
+                        <div class="ti-amt dr">-$500.00</div>
+                    </div>
+                    <div class="ti">
+                        <div class="ti-icon">E</div>
+                        <div class="ti-info">
+                            <div class="ti-name">Electricity Bill</div>
+                            <div class="ti-date">Apr 19 · Utility</div>
+                        </div>
+                        <div class="ti-amt dr">-$85.50</div>
+                    </div>
+                    <div class="ti">
+                        <div class="ti-icon">W</div>
+                        <div class="ti-info">
+                            <div class="ti-name">ATM Withdrawal</div>
+                            <div class="ti-date">Apr 18 · ATM</div>
+                        </div>
+                        <div class="ti-amt dr">-$200.00</div>
+                    </div>
+                    <div class="ti">
+                        <div class="ti-icon">R</div>
+                        <div class="ti-info">
+                            <div class="ti-name">Rent Payment</div>
+                            <div class="ti-date">Apr 17 · Housing</div>
+                        </div>
+                        <div class="ti-amt dr">-$1,200.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-copy">© 2026 Z Bank Financial Services. All rights reserved.</div>
+        <div class="footer-links">
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/support">Support</a>
+        </div>
+    </footer>
+
+    <script>
+        // Card data
+        const cardData = {
+            1: { title: 'Savings Debit Card', type: 'Visa Debit', limit: '$5,000', limitPct: '22%', status: 'Active', statusColor: 'var(--green)' },
+            2: { title: 'Credit Card', type: 'Mastercard Credit', limit: '$10,000', limitPct: '24.5%', status: 'Active', statusColor: 'var(--green)' },
+            3: { title: 'Current Debit Card', type: 'Visa Debit', limit: '$3,000', limitPct: '10.7%', status: 'Active', statusColor: 'var(--green)' }
+        };
+
+        let frozen = false;
+        let selectedCard = 1;
+
+        function selectCard(num) {
+            selectedCard = num;
+
+            // Update card highlight
+            [1,2,3].forEach(i => {
+                document.getElementById('card' + i).classList.remove('selected');
+                document.getElementById('tab' + i).classList.remove('active');
+            });
+            document.getElementById('card' + num).classList.add('selected');
+            document.getElementById('tab' + num).classList.add('active');
+
+            // Update details
+            const d = cardData[num];
+            document.getElementById('cardDetailTitle').textContent = d.title;
+            document.getElementById('cardStatus').textContent = '● ' + d.status;
+            document.getElementById('cardStatus').style.color = d.statusColor;
+            document.getElementById('cardTypeDetail').textContent = d.type;
+            document.getElementById('cardLimit').textContent = d.limit;
+
+            // Scroll card into view
+            document.getElementById('card' + num).scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        function toggleFreeze() {
+            frozen = !frozen;
+            const card = document.getElementById('card' + selectedCard);
+            const btn = document.getElementById('freezeLabel');
+            const icon = document.getElementById('freezeIcon');
+            const status = document.getElementById('cardStatus');
+
+            if (frozen) {
+                // Add frozen overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'frozen-overlay';
+                overlay.id = 'frozenOverlay';
+                overlay.innerHTML = '<div class="frozen-text">❄ Frozen</div>';
+                card.appendChild(overlay);
+                btn.textContent = 'Unfreeze Card';
+                icon.textContent = '◉';
+                icon.style.background = 'rgba(234,179,8,0.1)';
+                icon.style.color = 'var(--yellow)';
+                status.textContent = '● Frozen';
+                status.style.color = 'var(--yellow)';
+            } else {
+                const overlay = document.getElementById('frozenOverlay');
+                if (overlay) overlay.remove();
+                btn.textContent = 'Freeze Card';
+                icon.textContent = '❄';
+                icon.style.background = 'rgba(239,68,68,0.1)';
+                icon.style.color = 'var(--red)';
+                status.textContent = '● Active';
+                status.style.color = 'var(--green)';
+            }
+        }
+
+        function showPIN() {
+            const pins = { 1: '4521', 2: '3392', 3: '8873' };
+            const pin = pins[selectedCard];
+            alert('🔒 Your card PIN is: ' + pin + '\n\nNever share this with anyone.');
+        }
+
+        function reportLost() {
+            if (confirm('Are you sure you want to report card ••••' + selectedCard * 1111 + ' as lost? This will permanently block the card and request a replacement.')) {
+                document.getElementById('cardStatus').textContent = '● Blocked';
+                document.getElementById('cardStatus').style.color = 'var(--red)';
+                alert('Card has been blocked. A replacement will be delivered in 3–5 business days.');
+            }
+        }
+
+        function openModal() { document.getElementById('addCardModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('addCardModal').style.display = 'none'; }
+
+        function selectOption(el) {
+            document.querySelectorAll('.modal-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        // Auto highlight nav
+        (function() {
+            var path = window.location.pathname;
+            document.querySelectorAll('.nav-center a').forEach(function(a) {
+                a.classList.remove('active');
+                var href = a.getAttribute('href');
+                if (!href || href === '#' || href.indexOf('#') > 0) return;
+                if (path === href) a.classList.add('active');
+                else if (href !== '/' && path.startsWith(href)) a.classList.add('active');
+            });
+        })();
+    </script>
+</body>
+</html>

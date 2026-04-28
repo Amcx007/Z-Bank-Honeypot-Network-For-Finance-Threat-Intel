@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — API Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #030407;
+            --bg2: #080c12;
+            --card: #0c1018;
+            --card2: #111620;
+            --border: rgba(255,255,255,0.06);
+            --border2: rgba(255,255,255,0.12);
+            --muted: rgba(255,255,255,0.32);
+            --muted2: rgba(255,255,255,0.16);
+            --accent: #c8f135;
+            --accent-dim: rgba(200,241,53,0.08);
+            --accent-border: rgba(200,241,53,0.2);
+            --green: #22c55e;
+            --green-dim: rgba(34,197,94,0.08);
+            --red: #ef4444;
+            --red-dim: rgba(239,68,68,0.08);
+            --orange: #f97316;
+            --orange-dim: rgba(249,115,22,0.08);
+            --blue: #60a5fa;
+            --blue-dim: rgba(96,165,250,0.08);
+            --purple: #a78bfa;
+            --purple-dim: rgba(167,139,250,0.08);
+            --yellow: #fbbf24;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: #e8eaf0;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e2430; border-radius: 5px; }
+
+        /* ── TOP NAV ── */
+        .topbar {
+            position: sticky; top: 0; z-index: 200;
+            background: rgba(3,4,7,0.92);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 58px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 18px; }
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px; font-weight: 800;
+            letter-spacing: 4px; color: white;
+            text-decoration: none;
+        }
+        .topbar-sep { width: 1px; height: 18px; background: var(--border2); }
+        .topbar-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; font-weight: 600;
+            color: var(--accent); letter-spacing: 1px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            padding: 3px 10px; border-radius: 4px;
+        }
+        .topbar-right { display: flex; align-items: center; gap: 10px; }
+        .topbar-pill {
+            padding: 5px 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 12px; font-weight: 500;
+            color: var(--muted); text-decoration: none;
+            transition: all 0.2s;
+        }
+        .topbar-pill:hover { color: white; border-color: var(--border2); }
+        .live-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%; background: var(--green);
+            animation: blink 2s ease infinite;
+            box-shadow: 0 0 6px var(--green);
+        }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+        /* ── LAYOUT ── */
+        .layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 58px); }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            border-right: 1px solid var(--border);
+            padding: 28px 0;
+            position: sticky; top: 58px;
+            height: calc(100vh - 58px);
+            overflow-y: auto;
+        }
+        .sidebar-section { margin-bottom: 28px; }
+        .sidebar-title {
+            font-size: 10px; font-weight: 700;
+            color: var(--muted); text-transform: uppercase;
+            letter-spacing: 1.8px;
+            padding: 0 22px; margin-bottom: 8px;
+        }
+        .sidebar-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 22px; cursor: pointer;
+            font-size: 13px; font-weight: 500; color: var(--muted);
+            border-left: 2px solid transparent;
+            transition: all 0.18s;
+            text-decoration: none;
+        }
+        .sidebar-item:hover { color: white; background: rgba(255,255,255,0.03); }
+        .sidebar-item.active {
+            color: white;
+            border-left-color: var(--accent);
+            background: rgba(200,241,53,0.05);
+        }
+        .method-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; font-weight: 700;
+            padding: 2px 6px; border-radius: 3px;
+            letter-spacing: 0.5px; flex-shrink: 0;
+        }
+        .tag-get { background: var(--blue-dim); color: var(--blue); }
+        .tag-post { background: var(--green-dim); color: var(--green); }
+        .tag-warn { background: var(--orange-dim); color: var(--orange); }
+
+        /* ── MAIN CONTENT ── */
+        .main { padding: 40px 48px; max-width: 960px; }
+
+        /* Hero */
+        .hero { margin-bottom: 44px; opacity: 0; animation: fadeUp 0.5s ease 0.05s forwards; }
+        .hero-tag {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: var(--accent-dim); border: 1px solid var(--accent-border);
+            padding: 4px 12px; border-radius: 100px;
+            font-size: 10px; font-weight: 700; color: var(--accent);
+            letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 34px; font-weight: 800;
+            letter-spacing: -0.5px; color: white; margin-bottom: 10px;
+        }
+        .hero-sub { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 580px; margin-bottom: 22px; }
+        .hero-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .meta-chip {
+            display: flex; align-items: center; gap: 7px;
+            background: var(--card); border: 1px solid var(--border);
+            padding: 7px 14px; border-radius: 8px;
+            font-size: 12px; font-weight: 500; color: var(--muted);
+        }
+        .meta-chip .icon { font-size: 13px; }
+
+        /* Warning Banner */
+        .warn-banner {
+            background: rgba(249,115,22,0.06);
+            border: 1px solid rgba(249,115,22,0.18);
+            border-radius: 12px; padding: 14px 18px;
+            display: flex; gap: 12px; align-items: flex-start;
+            margin-bottom: 36px; font-size: 13px; color: #fdba74;
+            opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards;
+        }
+        .warn-icon {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(249,115,22,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; flex-shrink: 0;
+        }
+
+        /* Section heading */
+        .section-head {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 16px; margin-top: 40px;
+        }
+        .section-head:first-of-type { margin-top: 0; }
+        .sh-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 17px; font-weight: 700; color: white;
+        }
+        .sh-line { flex: 1; height: 1px; background: var(--border); }
+        .sh-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; font-weight: 600; color: var(--muted);
+            background: var(--card); border: 1px solid var(--border);
+            padding: 2px 8px; border-radius: 4px;
+        }
+
+        /* Endpoint Card */
+        .ep-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px; margin-bottom: 12px;
+            overflow: hidden;
+            opacity: 0; animation: fadeUp 0.45s ease forwards;
+            transition: border-color 0.2s;
+        }
+        .ep-card:hover { border-color: var(--border2); }
+        .ep-card.open { border-color: var(--border2); }
+
+        .ep-header {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 20px; cursor: pointer;
+            user-select: none;
+        }
+        .ep-method {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; font-weight: 700;
+            padding: 4px 10px; border-radius: 6px;
+            letter-spacing: 0.8px; min-width: 52px;
+            text-align: center; flex-shrink: 0;
+        }
+        .method-GET { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.15); }
+        .method-POST { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.15); }
+
+        .ep-path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; font-weight: 500; color: white;
+            flex: 1;
+        }
+        .ep-desc { font-size: 12px; color: var(--muted); flex: 1; }
+        .ep-badges { display: flex; gap: 6px; }
+        .badge {
+            font-size: 10px; font-weight: 600; padding: 2px 8px;
+            border-radius: 4px; letter-spacing: 0.5px;
+        }
+        .badge-noauth { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.15); }
+        .badge-idor { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.15); }
+        .badge-honey { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
+        .badge-vuln { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.15); }
+        .ep-chevron {
+            font-size: 12px; color: var(--muted);
+            transition: transform 0.25s ease; flex-shrink: 0;
+        }
+        .ep-card.open .ep-chevron { transform: rotate(180deg); }
+
+        /* Endpoint Body */
+        .ep-body { display: none; border-top: 1px solid var(--border); }
+        .ep-card.open .ep-body { display: block; }
+
+        .ep-inner { padding: 22px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .ep-inner.full { grid-template-columns: 1fr; }
+
+        .ep-panel { }
+        .ep-panel-title {
+            font-size: 10px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;
+        }
+
+        /* Params table */
+        .params-table { width: 100%; border-collapse: collapse; }
+        .params-table th {
+            text-align: left; font-size: 10px; font-weight: 700;
+            color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+            padding: 6px 10px; border-bottom: 1px solid var(--border);
+        }
+        .params-table td {
+            padding: 8px 10px; font-size: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            vertical-align: top;
+        }
+        .params-table tr:last-child td { border-bottom: none; }
+        .param-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; color: var(--accent); font-weight: 600;
+        }
+        .param-type {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; color: var(--blue);
+            background: var(--blue-dim); padding: 1px 6px; border-radius: 3px;
+        }
+        .param-required {
+            font-size: 9px; font-weight: 700; color: var(--red);
+            background: var(--red-dim); padding: 1px 6px; border-radius: 3px;
+        }
+        .param-optional {
+            font-size: 9px; font-weight: 600; color: var(--muted);
+            background: rgba(255,255,255,0.04); padding: 1px 6px; border-radius: 3px;
+        }
+
+        /* Try It */
+        .tryit { padding: 18px 20px; border-top: 1px solid var(--border); background: var(--bg2); }
+        .tryit-title {
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;
+        }
+        .tryit-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; flex-wrap: wrap; }
+        .tryit-input {
+            flex: 1; min-width: 80px;
+            padding: 9px 12px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; font-size: 12px; color: white;
+            outline: none; font-family: 'JetBrains Mono', monospace;
+            transition: border-color 0.2s;
+        }
+        .tryit-input:focus { border-color: rgba(255,255,255,0.2); }
+        .tryit-input::placeholder { color: rgba(255,255,255,0.18); }
+        .tryit-label {
+            font-size: 10px; font-weight: 600; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .tryit-field { display: flex; flex-direction: column; flex: 1; min-width: 120px; }
+        .btn-execute {
+            padding: 9px 22px;
+            background: white; color: black;
+            border: none; border-radius: 8px;
+            font-size: 12px; font-weight: 700;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: all 0.2s; white-space: nowrap; align-self: flex-end;
+        }
+        .btn-execute:hover { background: var(--accent); }
+        .btn-execute:active { transform: scale(0.97); }
+        .btn-execute.loading { opacity: 0.6; cursor: not-allowed; }
+
+        /* Response */
+        .response-block { margin-top: 12px; }
+        .response-header {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+        }
+        .response-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; font-weight: 700;
+            padding: 3px 10px; border-radius: 5px;
+        }
+        .status-200 { background: var(--green-dim); color: var(--green); }
+        .status-err { background: var(--red-dim); color: var(--red); }
+        .response-time { font-size: 11px; color: var(--muted); }
+        .code-block {
+            background: #080c10;
+            border: 1px solid var(--border);
+            border-radius: 8px; padding: 14px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; line-height: 1.6;
+            color: #a8d8a8;
+            white-space: pre-wrap; word-break: break-all;
+            max-height: 240px; overflow-y: auto;
+        }
+        .json-key { color: #79b8ff; }
+        .json-string { color: #9ecbff; }
+        .json-number { color: #f8c555; }
+        .json-bool { color: #f97583; }
+        .json-null { color: var(--muted); }
+
+        /* Log entry notification */
+        .log-notif {
+            display: none; margin-top: 8px;
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.14);
+            border-radius: 8px; padding: 10px 14px;
+            font-size: 12px; color: #fca5a5;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .log-notif-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+
+        /* Schemas section */
+        .schema-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 22px; margin-bottom: 12px;
+            opacity: 0; animation: fadeUp 0.45s ease forwards;
+        }
+        .schema-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px; font-weight: 700; color: var(--accent);
+            margin-bottom: 14px;
+        }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 48px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 60px;
+        }
+        .footer-copy { font-size: 11px; color: var(--muted2); font-family: 'JetBrains Mono', monospace; }
+
+        /* Stagger animation delays */
+        .ep-card:nth-child(1){animation-delay:0.12s}
+        .ep-card:nth-child(2){animation-delay:0.17s}
+        .ep-card:nth-child(3){animation-delay:0.22s}
+        .ep-card:nth-child(4){animation-delay:0.27s}
+        .ep-card:nth-child(5){animation-delay:0.32s}
+        .ep-card:nth-child(6){animation-delay:0.37s}
+        .schema-card:nth-child(1){animation-delay:0.12s}
+        .schema-card:nth-child(2){animation-delay:0.18s}
+    </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topbar">
+    <div class="topbar-left">
+        <a href="/dashboard" class="logo">Z BANK</a>
+        <div class="topbar-sep"></div>
+        <span class="topbar-label">API EXPLORER v1.0</span>
+    </div>
+    <div class="topbar-right">
+        <div class="live-dot"></div>
+        <a href="/dashboard" class="topbar-pill">← Dashboard</a>
+        <a href="/security" class="topbar-pill">SOC Panel</a>
+    </div>
+</nav>
+
+<div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Overview</div>
+            <a href="#overview" class="sidebar-item active">
+                <span class="method-tag tag-get">INFO</span>
+                Introduction
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">User Endpoints</div>
+            <a href="#ep-users" class="sidebar-item">
+                <span class="method-tag tag-get">GET</span>
+                /api/users
+            </a>
+            <a href="#ep-accounts" class="sidebar-item">
+                <span class="method-tag tag-get">GET</span>
+                /api/accounts
+            </a>
+            <a href="#ep-balance" class="sidebar-item">
+                <span class="method-tag tag-get">GET</span>
+                /api/balance
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">Transaction Endpoints</div>
+            <a href="#ep-transactions" class="sidebar-item">
+                <span class="method-tag tag-get">GET</span>
+                /api/transactions
+            </a>
+            <a href="#ep-transfer" class="sidebar-item">
+                <span class="method-tag tag-warn">POST</span>
+                /api/transfer
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">System</div>
+            <a href="#ep-health" class="sidebar-item">
+                <span class="method-tag tag-get">GET</span>
+                /api/health
+            </a>
+            <a href="#schemas" class="sidebar-item">
+                <span class="method-tag tag-get">OBJ</span>
+                Schemas
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main" id="overview">
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-tag">⚡ Honeypot Finance API</div>
+            <h1>Z Bank API Explorer</h1>
+            <p class="hero-sub">
+                Interactive documentation for the Z Bank honeypot REST API.
+                All endpoints are intentionally vulnerable — designed to attract and log attacker reconnaissance.
+                Every request is captured and forwarded to the security dashboard.
+            </p>
+            <div class="hero-meta">
+                <div class="meta-chip"><span class="icon">🌐</span> Base URL: localhost:8080</div>
+                <div class="meta-chip"><span class="icon">🔖</span> Version: 1.0.0</div>
+                <div class="meta-chip"><span class="icon">📋</span> Format: JSON</div>
+                <div class="meta-chip"><span class="icon">🔓</span> Auth: None (intentional)</div>
+            </div>
+        </div>
+
+        <!-- Warning Banner -->
+        <div class="warn-banner">
+            <div class="warn-icon">⚠️</div>
+            <div>
+                <strong style="color:#fb923c;">Honeypot Notice:</strong>
+                All endpoints on this API are intentionally unauthenticated and vulnerable to IDOR attacks.
+                Every request you make is silently logged as an attack event with your IP address, timestamp, and full request details.
+                This is a controlled cybersecurity research environment — PRJN26-213.
+            </div>
+        </div>
+
+        <!-- USER ENDPOINTS -->
+        <div class="section-head" id="ep-users">
+            <span class="sh-label">User Endpoints</span>
+            <span class="sh-line"></span>
+            <span class="sh-count">3 endpoints</span>
+        </div>
+
+        <!-- GET /api/users -->
+        <div class="ep-card" onclick="toggleCard(this)">
+            <div class="ep-header">
+                <span class="ep-method method-GET">GET</span>
+                <span class="ep-path">/api/users</span>
+                <span class="ep-desc">List all users — no authentication required</span>
+                <div class="ep-badges">
+                    <span class="badge badge-noauth">NO AUTH</span>
+                    <span class="badge badge-honey">BAIT DATA</span>
+                </div>
+                <span class="ep-chevron">▼</span>
+            </div>
+            <div class="ep-body">
+                <div class="ep-inner full">
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Description</div>
+                        <p style="font-size:13px;color:var(--muted);line-height:1.7;">
+                            Returns a complete list of all registered users with their account details.
+                            No authentication token required — this endpoint is intentionally exposed
+                            to enable attacker enumeration of all banking customers.
+                            Access is logged as <code style="color:var(--orange);font-size:11px;">API_USER_ENUMERATION</code> with MEDIUM severity.
+                        </p>
+                    </div>
+                </div>
+                <div class="tryit">
+                    <div class="tryit-title">Try it out</div>
+                    <div class="tryit-row">
+                        <div class="tryit-field">
+                            <div class="tryit-label">URL</div>
+                            <input class="tryit-input" value="/api/users" readonly/>
+                        </div>
+                        <button class="btn-execute" onclick="callApi(event, '/api/users', 'GET', {}, 'res-users')">
+                            ▶ Execute
+                        </button>
+                    </div>
+                    <div class="response-block" id="res-users" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GET /api/accounts -->
+        <div class="ep-card" id="ep-accounts" onclick="toggleCard(this)">
+            <div class="ep-header">
+                <span class="ep-method method-GET">GET</span>
+                <span class="ep-path">/api/accounts</span>
+                <span class="ep-desc">Get account by ID — IDOR vulnerable</span>
+                <div class="ep-badges">
+                    <span class="badge badge-noauth">NO AUTH</span>
+                    <span class="badge badge-idor">IDOR</span>
+                </div>
+                <span class="ep-chevron">▼</span>
+            </div>
+            <div class="ep-body">
+                <div class="ep-inner">
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Parameters</div>
+                        <table class="params-table">
+                            <tr>
+                                <th>Name</th><th>Type</th><th>In</th><th>Required</th><th>Description</th>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">id</span></td>
+                                <td><span class="param-type">integer</span></td>
+                                <td style="font-size:12px;color:var(--muted);">query</td>
+                                <td><span class="param-required">required</span></td>
+                                <td style="font-size:12px;color:var(--muted);">User ID — change to 1, 2, or 3 to access any account</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">IDOR Vulnerability</div>
+                        <p style="font-size:12px;color:var(--muted);line-height:1.7;">
+                            This endpoint has no ownership validation. Any caller can access
+                            any user's account data by changing the <code style="color:var(--orange);">?id=</code> parameter.
+                            Try id=1, id=2, id=3 to see different users' data.
+                        </p>
+                    </div>
+                </div>
+                <div class="tryit">
+                    <div class="tryit-title">Try it out</div>
+                    <div class="tryit-row">
+                        <div class="tryit-field">
+                            <div class="tryit-label">Account ID</div>
+                            <input class="tryit-input" id="accounts-id" placeholder="1" value="1" style="max-width:80px;"/>
+                        </div>
+                        <button class="btn-execute" onclick="callApi(event, '/api/accounts?id=' + document.getElementById('accounts-id').value, 'GET', {}, 'res-accounts')">
+                            ▶ Execute
+                        </button>
+                    </div>
+                    <div class="response-block" id="res-accounts" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GET /api/balance -->
+        <div class="ep-card" id="ep-balance" onclick="toggleCard(this)">
+            <div class="ep-header">
+                <span class="ep-method method-GET">GET</span>
+                <span class="ep-path">/api/balance</span>
+                <span class="ep-desc">Check any user's balance — no auth needed</span>
+                <div class="ep-badges">
+                    <span class="badge badge-noauth">NO AUTH</span>
+                    <span class="badge badge-idor">IDOR</span>
+                </div>
+                <span class="ep-chevron">▼</span>
+            </div>
+            <div class="ep-body">
+                <div class="ep-inner">
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Parameters</div>
+                        <table class="params-table">
+                            <tr>
+                                <th>Name</th><th>Type</th><th>In</th><th>Required</th><th>Description</th>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">id</span></td>
+                                <td><span class="param-type">integer</span></td>
+                                <td style="font-size:12px;color:var(--muted);">query</td>
+                                <td><span class="param-required">required</span></td>
+                                <td style="font-size:12px;color:var(--muted);">User ID to check balance for</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Description</div>
+                        <p style="font-size:12px;color:var(--muted);line-height:1.7;">
+                            Returns the current balance for any user without requiring authentication.
+                            Logged as <code style="color:var(--orange);">API_BALANCE_IDOR</code> with MEDIUM severity.
+                        </p>
+                    </div>
+                </div>
+                <div class="tryit">
+                    <div class="tryit-title">Try it out</div>
+                    <div class="tryit-row">
+                        <div class="tryit-field">
+                            <div class="tryit-label">User ID</div>
+                            <input class="tryit-input" id="balance-id" placeholder="1" value="1" style="max-width:80px;"/>
+                        </div>
+                        <button class="btn-execute" onclick="callApi(event, '/api/balance?id=' + document.getElementById('balance-id').value, 'GET', {}, 'res-balance')">
+                            ▶ Execute
+                        </button>
+                    </div>
+                    <div class="response-block" id="res-balance" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRANSACTION ENDPOINTS -->
+        <div class="section-head" id="ep-transactions">
+            <span class="sh-label">Transaction Endpoints</span>
+            <span class="sh-line"></span>
+            <span class="sh-count">2 endpoints</span>
+        </div>
+
+        <!-- GET /api/transactions -->
+        <div class="ep-card" onclick="toggleCard(this)">
+            <div class="ep-header">
+                <span class="ep-method method-GET">GET</span>
+                <span class="ep-path">/api/transactions</span>
+                <span class="ep-desc">View any user's transaction history</span>
+                <div class="ep-badges">
+                    <span class="badge badge-noauth">NO AUTH</span>
+                    <span class="badge badge-idor">IDOR</span>
+                </div>
+                <span class="ep-chevron">▼</span>
+            </div>
+            <div class="ep-body">
+                <div class="ep-inner">
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Parameters</div>
+                        <table class="params-table">
+                            <tr>
+                                <th>Name</th><th>Type</th><th>In</th><th>Required</th><th>Description</th>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">user_id</span></td>
+                                <td><span class="param-type">integer</span></td>
+                                <td style="font-size:12px;color:var(--muted);">query</td>
+                                <td><span class="param-required">required</span></td>
+                                <td style="font-size:12px;color:var(--muted);">User ID whose transactions to retrieve</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Logged As</div>
+                        <p style="font-size:12px;color:var(--muted);line-height:1.7;">
+                            Access is logged as <code style="color:var(--orange);">API_TRANSACTIONS_IDOR</code> with HIGH severity.
+                            Full transaction history exposed — amounts, dates, accounts, categories.
+                        </p>
+                    </div>
+                </div>
+                <div class="tryit">
+                    <div class="tryit-title">Try it out</div>
+                    <div class="tryit-row">
+                        <div class="tryit-field">
+                            <div class="tryit-label">User ID</div>
+                            <input class="tryit-input" id="txn-id" placeholder="1" value="1" style="max-width:80px;"/>
+                        </div>
+                        <button class="btn-execute" onclick="callApi(event, '/api/transactions?user_id=' + document.getElementById('txn-id').value, 'GET', {}, 'res-transactions')">
+                            ▶ Execute
+                        </button>
+                    </div>
+                    <div class="response-block" id="res-transactions" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- POST /api/transfer -->
+        <div class="ep-card" id="ep-transfer" onclick="toggleCard(this)">
+            <div class="ep-header">
+                <span class="ep-method method-POST">POST</span>
+                <span class="ep-path">/api/transfer</span>
+                <span class="ep-desc">Execute transfer — no auth, no validation</span>
+                <div class="ep-badges">
+                    <span class="badge badge-noauth">NO AUTH</span>
+                    <span class="badge badge-vuln">HIGH RISK</span>
+                </div>
+                <span class="ep-chevron">▼</span>
+            </div>
+            <div class="ep-body">
+                <div class="ep-inner">
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Request Body Schema</div>
+                        <table class="params-table">
+                            <tr>
+                                <th>Field</th><th>Type</th><th>Required</th><th>Description</th>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">from_account</span></td>
+                                <td><span class="param-type">string</span></td>
+                                <td><span class="param-required">required</span></td>
+                                <td style="font-size:12px;color:var(--muted);">Source account number</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">to_account</span></td>
+                                <td><span class="param-type">string</span></td>
+                                <td><span class="param-required">required</span></td>
+                                <td style="font-size:12px;color:var(--muted);">Destination account number</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">amount</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-required">required</span></td>
+                                <td style="font-size:12px;color:var(--muted);">Transfer amount in USD</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">beneficiary_name</span></td>
+                                <td><span class="param-type">string</span></td>
+                                <td><span class="param-optional">optional</span></td>
+                                <td style="font-size:12px;color:var(--muted);">Recipient name</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Security Risk</div>
+                        <p style="font-size:12px;color:var(--muted);line-height:1.7;">
+                            This endpoint accepts transfer requests from anyone.
+                            No token or session validation. In a real bank this would allow
+                            unauthenticated fund transfers. Logged as
+                            <code style="color:var(--red);">API_TRANSFER_NO_AUTH</code> with HIGH severity.
+                        </p>
+                    </div>
+                </div>
+                <div class="tryit">
+                    <div class="tryit-title">Try it out</div>
+                    <div class="tryit-row">
+                        <div class="tryit-field">
+                            <div class="tryit-label">From Account</div>
+                            <input class="tryit-input" id="tf-from" placeholder="ACC-4521-XXXX" value="ACC-4521-XXXX"/>
+                        </div>
+                        <div class="tryit-field">
+                            <div class="tryit-label">To Account</div>
+                            <input class="tryit-input" id="tf-to" placeholder="ACC-8821-XXXX" value="ACC-8821-XXXX"/>
+                        </div>
+                        <div class="tryit-field">
+                            <div class="tryit-label">Amount ($)</div>
+                            <input class="tryit-input" id="tf-amount" placeholder="500" value="500" style="max-width:80px;"/>
+                        </div>
+                        <button class="btn-execute" onclick="callApi(event, '/api/transfer', 'POST', {from_account: document.getElementById('tf-from').value, to_account: document.getElementById('tf-to').value, amount: parseFloat(document.getElementById('tf-amount').value), beneficiary_name: 'API Test'}, 'res-transfer')">
+                            ▶ Execute
+                        </button>
+                    </div>
+                    <div class="response-block" id="res-transfer" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SYSTEM -->
+        <div class="section-head" id="ep-health">
+            <span class="sh-label">System</span>
+            <span class="sh-line"></span>
+            <span class="sh-count">1 endpoint</span>
+        </div>
+
+        <!-- GET /api/health -->
+        <div class="ep-card" onclick="toggleCard(this)">
+            <div class="ep-header">
+                <span class="ep-method method-GET">GET</span>
+                <span class="ep-path">/api/health</span>
+                <span class="ep-desc">Service health check</span>
+                <div class="ep-badges">
+                    <span class="badge badge-honey">SYSTEM</span>
+                </div>
+                <span class="ep-chevron">▼</span>
+            </div>
+            <div class="ep-body">
+                <div class="ep-inner full">
+                    <div class="ep-panel">
+                        <div class="ep-panel-title">Description</div>
+                        <p style="font-size:13px;color:var(--muted);line-height:1.7;">
+                            Returns the current health status of the Z Bank API service.
+                            Useful for confirming the honeypot is running and accessible.
+                        </p>
+                    </div>
+                </div>
+                <div class="tryit">
+                    <div class="tryit-title">Try it out</div>
+                    <div class="tryit-row">
+                        <div class="tryit-field">
+                            <div class="tryit-label">URL</div>
+                            <input class="tryit-input" value="/api/health" readonly/>
+                        </div>
+                        <button class="btn-execute" onclick="callApi(event, '/api/health', 'GET', {}, 'res-health')">
+                            ▶ Execute
+                        </button>
+                    </div>
+                    <div class="response-block" id="res-health" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCHEMAS -->
+        <div class="section-head" id="schemas">
+            <span class="sh-label">Data Schemas</span>
+            <span class="sh-line"></span>
+            <span class="sh-count">2 schemas</span>
+        </div>
+
+        <div class="schema-card">
+            <div class="schema-name">User</div>
+            <div class="code-block"><span class="json-key">"id"</span>: <span class="json-type" style="color:var(--blue);">integer</span>
+<span class="json-key">"username"</span>: <span class="json-type" style="color:var(--blue);">string</span>
+<span class="json-key">"full_name"</span>: <span class="json-type" style="color:var(--blue);">string</span>
+<span class="json-key">"email"</span>: <span class="json-type" style="color:var(--blue);">string</span>
+<span class="json-key">"account_number"</span>: <span class="json-type" style="color:var(--blue);">string</span>
+<span class="json-key">"account_type"</span>: <span class="json-type" style="color:var(--blue);">string</span>  <span style="color:var(--muted);">// "savings" | "current"</span></div>
+        </div>
+
+        <div class="schema-card">
+            <div class="schema-name">Transaction</div>
+            <div class="code-block"><span class="json-key">"id"</span>: <span class="json-type" style="color:var(--blue);">integer</span>
+<span class="json-key">"user_id"</span>: <span class="json-type" style="color:var(--blue);">integer</span>
+<span class="json-key">"type"</span>: <span class="json-type" style="color:var(--blue);">string</span>  <span style="color:var(--muted);">// "credit" | "debit"</span>
+<span class="json-key">"amount"</span>: <span class="json-type" style="color:var(--blue);">float</span>
+<span class="json-key">"description"</span>: <span class="json-type" style="color:var(--blue);">string</span>
+<span class="json-key">"from_account"</span>: <span class="json-type" style="color:var(--blue);">string</span>
+<span class="json-key">"to_account"</span>: <span class="json-type" style="color:var(--blue);">string</span>
+<span class="json-key">"balance_after"</span>: <span class="json-type" style="color:var(--blue);">float</span>
+<span class="json-key">"timestamp"</span>: <span class="json-type" style="color:var(--blue);">string</span>  <span style="color:var(--muted);">// ISO 8601</span>
+<span class="json-key">"status"</span>: <span class="json-type" style="color:var(--blue);">string</span>  <span style="color:var(--muted);">// "completed" | "pending"</span>
+<span class="json-key">"category"</span>: <span class="json-type" style="color:var(--blue);">string</span></div>
+        </div>
+
+    </main>
+</div>
+
+<footer class="footer">
+    <div class="footer-copy">Z Bank Honeypot · PRJN26-213 · All requests logged</div>
+    <div class="footer-copy">© 2026 Z Bank Financial Services</div>
+</footer>
+
+<script>
+    function toggleCard(card) {
+        // Don't toggle if click came from button or input
+        if (event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT') return;
+        card.classList.toggle('open');
+    }
+
+    function syntaxHighlight(json) {
+        if (typeof json !== 'string') json = JSON.stringify(json, null, 2);
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+            let cls = 'json-number';
+            if (/^"/.test(match)) {
+                cls = /:$/.test(match) ? 'json-key' : 'json-string';
+            } else if (/true|false/.test(match)) {
+                cls = 'json-bool';
+            } else if (/null/.test(match)) {
+                cls = 'json-null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+
+    async function callApi(event, url, method, body, resultId) {
+        event.stopPropagation();
+        const btn = event.target;
+        const resultEl = document.getElementById(resultId);
+
+        btn.classList.add('loading');
+        btn.textContent = '⏳ Fetching...';
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = '<div style="color:var(--muted);font-size:12px;">Sending request...</div>';
+
+        const start = Date.now();
+
+        try {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (method === 'POST') opts.body = JSON.stringify(body);
+
+            const res = await fetch(url, opts);
+            const data = await res.json();
+            const elapsed = Date.now() - start;
+
+            const statusClass = res.ok ? 'status-200' : 'status-err';
+
+            resultEl.innerHTML = `
+                <div class="response-header">
+                    <span class="response-status ${statusClass}">${res.status} ${res.ok ? 'OK' : 'Error'}</span>
+                    <span class="response-time">⏱ ${elapsed}ms</span>
+                </div>
+                <div class="code-block">${syntaxHighlight(data)}</div>
+                <div class="log-notif" style="display:flex;">
+                    <div class="log-notif-dot"></div>
+                    <span>This request was logged as an attack event in the security dashboard.</span>
+                </div>
+            `;
+        } catch (err) {
+            resultEl.innerHTML = `
+                <div class="response-header">
+                    <span class="response-status status-err">Error</span>
+                </div>
+                <div class="code-block" style="color:var(--red);">Failed to connect: ${err.message}</div>
+            `;
+        }
+
+        btn.classList.remove('loading');
+        btn.textContent = '▶ Execute';
+    }
+
+    // Smooth scroll sidebar
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>

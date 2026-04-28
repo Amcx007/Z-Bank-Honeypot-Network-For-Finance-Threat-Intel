@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--black:#050505;--card:#0f0f0f;--card2:#141414;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--muted:rgba(255,255,255,0.38);--muted2:rgba(255,255,255,0.18);--accent:#c8f135;--accent-dim:rgba(200,241,53,0.1);--green:#22c55e;--red:#ef4444;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--black);color:#f0f0f0;min-height:100vh;-webkit-font-smoothing:antialiased;}
+        ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#222;border-radius:4px;}
+        .navbar{position:sticky;top:0;background:rgba(5,5,5,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);padding:16px 48px;display:flex;justify-content:space-between;align-items:center;z-index:100;}
+        .nav-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:4px;color:white;text-decoration:none;}
+        .nav-center{display:flex;gap:2px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:4px;}
+        .nav-center a{padding:8px 18px;border-radius:100px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);text-decoration:none;transition:all 0.2s;white-space:nowrap;}
+        .nav-center a:hover{color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.06);}
+        .nav-center a.active{background:rgba(255,255,255,0.1);color:white;}
+        .nav-right{display:flex;align-items:center;gap:12px;}
+        .nav-avatar{width:34px;height:34px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none;transition:all 0.2s;}
+        .nav-avatar:hover{background:rgba(255,255,255,0.13);}
+        .nav-logout{padding:8px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;color:rgba(255,255,255,0.45);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;}
+        .nav-logout:hover{color:white;border-color:rgba(255,255,255,0.18);}
+        .page{padding:44px 48px;max-width:1200px;margin:0 auto;}
+        .page-header{margin-bottom:36px;opacity:0;animation:fadeUp 0.5s ease 0.05s forwards;}
+        .page-tag{display:inline-flex;align-items:center;gap:7px;background:var(--accent-dim);border:1px solid rgba(200,241,53,0.18);padding:5px 14px;border-radius:100px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:14px;}
+        .page-tag .dot{width:5px;height:5px;background:var(--accent);border-radius:50%;}
+        .page-header h1{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-0.5px;color:white;margin-bottom:6px;}
+        .page-header p{font-size:14px;color:var(--muted);}
+
+        /* IDOR warning banner — shown when viewing another user's profile */
+        .idor-banner{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:14px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:13px;color:#fca5a5;opacity:0;animation:fadeUp 0.5s ease 0.05s forwards;}
+        .idor-icon{width:32px;height:32px;background:rgba(239,68,68,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+
+        .layout{display:grid;grid-template-columns:260px 1fr;gap:16px;}
+        .sidebar{display:flex;flex-direction:column;gap:14px;}
+        .profile-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;text-align:center;opacity:0;animation:fadeUp 0.5s ease 0.1s forwards;}
+        .avatar{width:72px;height:72px;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 14px;}
+        .profile-name{font-size:16px;font-weight:700;color:white;margin-bottom:4px;}
+        .profile-role{font-size:12px;color:var(--muted);margin-bottom:14px;}
+        .kyc-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);color:var(--green);padding:4px 12px;border-radius:100px;font-size:11px;font-weight:600;margin-bottom:14px;}
+        .cid{font-size:12px;color:var(--muted);background:rgba(255,255,255,0.03);border-radius:8px;padding:9px 12px;}
+        .cid span{color:white;font-weight:600;}
+        /* IDOR: user id shown intentionally */
+        .user-id-exposed{font-size:11px;color:rgba(255,255,255,0.25);margin-top:8px;font-family:monospace;}
+        .menu-panel{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:10px;opacity:0;animation:fadeUp 0.5s ease 0.15s forwards;}
+        .menu-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all 0.2s;}
+        .menu-item:hover{background:rgba(255,255,255,0.05);color:white;}
+        .menu-item.active{background:rgba(255,255,255,0.08);color:white;}
+        .menu-icon{width:28px;height:28px;background:rgba(255,255,255,0.05);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(255,255,255,0.4);flex-shrink:0;}
+        .menu-item.active .menu-icon{background:var(--accent-dim);color:var(--accent);}
+        .menu-arrow{margin-left:auto;font-size:14px;color:var(--muted2);}
+        .content{opacity:0;animation:fadeUp 0.5s ease 0.2s forwards;}
+        .tab-pane{display:none;}
+        .tab-pane.active{display:block;}
+        .panel{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;margin-bottom:14px;}
+        .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+        .ph-title{font-size:15px;font-weight:700;color:white;}
+        .ph-sub{font-size:12px;color:var(--muted);}
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;}
+        .form-group{margin-bottom:0;}
+        .form-group.full{grid-column:span 2;}
+        .form-group label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+        .form-group input,.form-group select{width:100%;padding:12px 15px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;font-size:14px;color:white;outline:none;transition:all 0.2s;font-family:'Inter',sans-serif;-webkit-appearance:none;}
+        .form-group input::placeholder{color:rgba(255,255,255,0.2);}
+        .form-group input:focus,.form-group select:focus{border-color:rgba(255,255,255,0.22);background:rgba(255,255,255,0.06);}
+        .form-group input[readonly]{opacity:0.4;cursor:not-allowed;}
+        .form-group select option{background:#1a1a1a;}
+        .btn-save{padding:11px 26px;background:white;color:black;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;}
+        .btn-save:hover{background:var(--accent);}
+        .sec-item{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+        .sec-item:last-child{border-bottom:none;}
+        .sec-label{font-size:14px;font-weight:500;color:#e0e0e0;margin-bottom:3px;}
+        .sec-desc{font-size:12px;color:var(--muted);}
+        .toggle{width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;transition:all 0.3s;flex-shrink:0;background:rgba(255,255,255,0.1);}
+        .toggle.on{background:var(--accent);}
+        .toggle::after{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;left:3px;transition:all 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+        .toggle.on::after{left:23px;}
+        .act-item{display:flex;align-items:flex-start;gap:14px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+        .act-item:last-child{border-bottom:none;}
+        .act-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);margin-top:5px;flex-shrink:0;}
+        .act-dot.g{background:var(--green);}.act-dot.r{background:var(--red);}
+        .act-info{flex:1;}
+        .act-title{font-size:13px;font-weight:500;color:#e0e0e0;margin-bottom:3px;}
+        .act-time{font-size:11px;color:var(--muted);}
+        .act-device{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap;}
+        .notif-item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+        .notif-item:last-child{border-bottom:none;}
+        .notif-label{font-size:14px;font-weight:500;color:#e0e0e0;margin-bottom:3px;}
+        .notif-desc{font-size:12px;color:var(--muted);}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+        .footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;justify-content:space-between;align-items:center;margin-top:50px;}
+        .footer-copy{font-size:12px;color:var(--muted2);}
+        .footer-links{display:flex;gap:20px;}
+        .footer-links a{font-size:12px;color:var(--muted2);text-decoration:none;transition:color 0.2s;}
+        .footer-links a:hover{color:white;}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-logo">Z BANK</a>
+        <div class="nav-center">
+            <a href="/dashboard">Home</a>
+            <a href="/dashboard#services">Services</a>
+            <a href="/dashboard#about">About Us</a>
+            <a href="/support">Support</a>
+        </div>
+        <div class="nav-right">
+            <a href="/profile" class="nav-avatar">👤</a>
+            <a href="/logout" class="nav-logout">← Logout</a>
+        </div>
+    </nav>
+
+    <div class="page">
+        <div class="page-header">
+            <div class="page-tag"><span class="dot"></span>My Profile</div>
+            <h1>Account Settings</h1>
+            <p>
+                {% if not is_own_profile %}
+                    ⚠️ Viewing profile of: {{ user.full_name }}
+                {% else %}
+                    Manage your personal information, security and preferences
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- IDOR Warning — shown when attacker accesses another user's profile -->
+        {% if not is_own_profile %}
+        <div class="idor-banner">
+            <div class="idor-icon">⚠</div>
+            <div>
+                <strong>IDOR Vulnerability Detected!</strong> —
+                You are viewing <strong>{{ user.full_name }}'s</strong> profile
+                via URL parameter manipulation (/profile?id={{ user.id }}).
+                This access has been logged as a HIGH severity attack.
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- IDOR attack links exposed in page source -->
+        <!-- Try: /profile?id=1, /profile?id=2, /profile?id=3 -->
+
+        <div class="layout">
+            <div class="sidebar">
+                <div class="profile-card">
+                    <div class="avatar">👤</div>
+                    <div class="profile-name">{{ user.full_name }}</div>
+                    <div class="profile-role">{{ user.account_type|capitalize }} Account Holder</div>
+                    <div class="kyc-badge">✓ KYC Verified</div>
+                    <div class="cid">Account: <span>{{ user.account_number }}</span></div>
+                    <!-- Intentional: User ID exposed for IDOR demonstration -->
+                    <div class="user-id-exposed">user_id={{ user.id }} · Try /profile?id={{ user.id }}</div>
+                </div>
+
+                <div class="menu-panel">
+                    <div class="menu-item active" onclick="showTab('personal', this)">
+                        <div class="menu-icon">◉</div>
+                        Personal Info
+                        <span class="menu-arrow">›</span>
+                    </div>
+                    <div class="menu-item" onclick="showTab('security', this)">
+                        <div class="menu-icon">⬡</div>
+                        Security
+                        <span class="menu-arrow">›</span>
+                    </div>
+                    <div class="menu-item" onclick="showTab('notifications', this)">
+                        <div class="menu-icon">◎</div>
+                        Notifications
+                        <span class="menu-arrow">›</span>
+                    </div>
+                    <div class="menu-item" onclick="showTab('activity', this)">
+                        <div class="menu-icon">▦</div>
+                        Login Activity
+                        <span class="menu-arrow">›</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- Personal Info Tab -->
+                <div id="tab-personal" class="tab-pane active">
+                    <div class="panel">
+                        <div class="ph">
+                            <div class="ph-title">Personal Information</div>
+                            <span class="ph-sub">Member since {{ user.member_since }}</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" value="{{ user.full_name.split()[0] if user.full_name else '' }}"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" value="{{ user.full_name.split()[-1] if user.full_name else '' }}"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address</label>
+                                <input type="email" value="{{ user.email }}"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" value="{{ user.phone }}"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Account Number</label>
+                                <input type="text" value="{{ user.account_number }}" readonly/>
+                            </div>
+                            <div class="form-group">
+                                <label>Account Type</label>
+                                <input type="text" value="{{ user.account_type|capitalize }}" readonly/>
+                            </div>
+                            <div class="form-group full">
+                                <label>Address</label>
+                                <input type="text" value="{{ user.address }}"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Member Since</label>
+                                <input type="text" value="{{ user.member_since }}" readonly/>
+                            </div>
+                            <div class="form-group">
+                                <label>Current Balance</label>
+                                <input type="text" value="${{ '%.2f'|format(user.balance) }}" readonly/>
+                            </div>
+                        </div>
+                        <button class="btn-save">Save Changes</button>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div id="tab-security" class="tab-pane">
+                    <div class="panel">
+                        <div class="ph"><div class="ph-title">Security Settings</div></div>
+                        <div class="sec-item">
+                            <div><div class="sec-label">Two-Factor Authentication</div><div class="sec-desc">Extra layer of security for your account</div></div>
+                            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="sec-item">
+                            <div><div class="sec-label">Login Notifications</div><div class="sec-desc">Get notified on every new login attempt</div></div>
+                            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="sec-item">
+                            <div><div class="sec-label">Transaction Alerts</div><div class="sec-desc">SMS alerts for every debit and credit</div></div>
+                            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="sec-item">
+                            <div><div class="sec-label">Biometric Login</div><div class="sec-desc">Use fingerprint or face ID to sign in</div></div>
+                            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="sec-item">
+                            <div><div class="sec-label">International Transfers</div><div class="sec-desc">Allow transfers to international accounts</div></div>
+                            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="ph"><div class="ph-title">Change Password</div></div>
+                        <div class="form-grid">
+                            <div class="form-group full"><label>Current Password</label><input type="password" placeholder="Enter current password"/></div>
+                            <div class="form-group"><label>New Password</label><input type="password" placeholder="Min 8 characters"/></div>
+                            <div class="form-group"><label>Confirm New Password</label><input type="password" placeholder="Repeat new password"/></div>
+                        </div>
+                        <button class="btn-save">Update Password</button>
+                    </div>
+                </div>
+
+                <!-- Notifications Tab -->
+                <div id="tab-notifications" class="tab-pane">
+                    <div class="panel">
+                        <div class="ph"><div class="ph-title">Notification Preferences</div></div>
+                        <div class="notif-item"><div><div class="notif-label">Transaction Alerts</div><div class="notif-desc">Notify me for every debit and credit</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                        <div class="notif-item"><div><div class="notif-label">Monthly Statements</div><div class="notif-desc">Email statement at end of every month</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                        <div class="notif-item"><div><div class="notif-label">Promotional Offers</div><div class="notif-desc">Special offers and new features</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+                        <div class="notif-item"><div><div class="notif-label">Security Alerts</div><div class="notif-desc">Suspicious activity notifications</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                        <div class="notif-item"><div><div class="notif-label">Transfer Confirmations</div><div class="notif-desc">SMS confirmation for every transfer</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                    </div>
+                </div>
+
+                <!-- Activity Tab -->
+                <div id="tab-activity" class="tab-pane">
+                    <div class="panel">
+                        <div class="ph"><div class="ph-title">Recent Login Activity</div></div>
+                        <div class="act-item">
+                            <div class="act-dot g"></div>
+                            <div class="act-info"><div class="act-title">Login — Current Session</div><div class="act-time">Active now · {{ user.address.split(',')[-1].strip() if user.address else 'Unknown' }}</div></div>
+                            <div class="act-device" style="color:var(--accent);font-size:12px;">Current</div>
+                        </div>
+                        <div class="act-item">
+                            <div class="act-dot"></div>
+                            <div class="act-info"><div class="act-title">Login — Chrome on Windows</div><div class="act-time">Yesterday · {{ user.address.split(',')[-1].strip() if user.address else 'Unknown' }}</div></div>
+                            <div class="act-device">Desktop</div>
+                        </div>
+                        <div class="act-item">
+                            <div class="act-dot"></div>
+                            <div class="act-info"><div class="act-title">Login — Safari on iPhone</div><div class="act-time">Apr 24, 2026 · Mobile</div></div>
+                            <div class="act-device">Mobile</div>
+                        </div>
+                        <div class="act-item">
+                            <div class="act-dot r"></div>
+                            <div class="act-info"><div class="act-title">Failed Login Attempt</div><div class="act-time">Apr 23, 2026 · Unknown location</div></div>
+                            <div class="act-device" style="color:var(--red);">Blocked</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-copy">© 2026 Z Bank Financial Services. All rights reserved.</div>
+        <div class="footer-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Support</a></div>
+    </footer>
+
+    <script>
+        function showTab(tab, el) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            el.classList.add('active');
+        }
+
+        (function() {
+            var path = window.location.pathname;
+            document.querySelectorAll('.nav-center a').forEach(function(a) {
+                a.classList.remove('active');
+                var href = a.getAttribute('href');
+                if (!href || href.indexOf('#') > 0) return;
+                if (path === href) a.classList.add('active');
+                else if (href !== '/' && path.startsWith(href)) a.classList.add('active');
+            });
+        })();
+    </script>
+</body>
+</html>

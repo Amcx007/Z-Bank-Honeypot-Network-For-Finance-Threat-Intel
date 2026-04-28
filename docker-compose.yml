@@ -1,0 +1,88 @@
+version: '3.8'
+
+networks:
+  honeypot-net:
+    driver: bridge
+
+volumes:
+  esdata:
+  banking_data:
+
+services:
+
+  banking-portal:
+    build: ./banking_portal
+    container_name: banking-portal
+    ports:
+      - "8080:8080"
+    volumes:
+      - banking_data:/data
+      - ./logs:/logs
+    restart: always
+    networks:
+      - honeypot-net
+
+  ssh-honeypot:
+    build: ./ssh_honeypot
+    container_name: ssh-honeypot
+    ports:
+      - "2222:2222"
+    volumes:
+      - ./logs:/logs
+    restart: always
+    networks:
+      - honeypot-net
+
+  services-honeypot:
+    build: ./services_honeypot
+    container_name: services-honeypot
+    ports:
+      - "21:21"
+      - "23:23"
+      - "3306:3306"
+      - "5432:5432"
+      - "6379:6379"
+    volumes:
+      - ./logs:/logs
+    restart: always
+    networks:
+      - honeypot-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - honeypot-net
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logs:/logs
+    depends_on:
+      - elasticsearch
+    networks:
+      - honeypot-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - honeypot-net

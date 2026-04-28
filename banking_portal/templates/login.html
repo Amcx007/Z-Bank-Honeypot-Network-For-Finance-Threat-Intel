@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <title>Z Bank — Online Banking</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color-scheme: light;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #0a0a0a;
+            position: relative;
+        }
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-circle1 {
+            position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0,0,0,0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -100px; right: -100px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-circle2 {
+            position: fixed;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(0,0,0,0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: -80px; left: -80px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .navbar {
+            padding: 25px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #0a0a0a;
+        }
+        .nav-btns { display: flex; gap: 12px; }
+        .btn-outline {
+            padding: 10px 24px;
+            border: 1px solid rgba(0,0,0,0.2);
+            background: transparent;
+            color: #0a0a0a;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .btn-outline:hover { background: rgba(0,0,0,0.05); }
+        .btn-filled {
+            padding: 10px 24px;
+            background: #0a0a0a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .btn-filled:hover { opacity: 0.85; }
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 20px 60px;
+            position: relative;
+            z-index: 1;
+        }
+        .quote-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #666;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .hero h1 {
+            font-size: 62px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+            color: #0a0a0a;
+        }
+        .hero h1 span { color: #999; }
+        .hero p {
+            font-size: 17px;
+            color: #666;
+            max-width: 480px;
+            line-height: 1.7;
+            margin-bottom: 45px;
+        }
+        .hero-btns { display: flex; gap: 15px; }
+        .hero-btn-primary {
+            padding: 15px 38px;
+            background: #0a0a0a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+        .hero-btn-primary:hover { opacity: 0.85; }
+        .hero-btn-secondary {
+            padding: 15px 38px;
+            background: rgba(255,255,255,0.7);
+            color: #0a0a0a;
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .hero-btn-secondary:hover { background: rgba(255,255,255,0.9); }
+        .stats-bar {
+            border-top: 1px solid rgba(0,0,0,0.06);
+            padding: 18px 50px;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            background: rgba(250,250,250,0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+        .stat-item { text-align: center; }
+        .stat-item .number {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0a0a0a;
+        }
+        .stat-item .label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .footer {
+            background: #0a0a0a;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+            padding: 16px;
+            font-size: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .footer a {
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            margin: 0 12px;
+        }
+        .footer a:hover { color: white; }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-circle1"></div>
+    <div class="bg-circle2"></div>
+
+    <nav class="navbar">
+        <div class="logo">Z BANK</div>
+        <div class="nav-btns">
+            <a href="/login-page" class="btn-outline">Log In</a>
+            <a href="/register-page" class="btn-filled">Sign Up</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="quote-tag">✦ Trusted by 2M+ customers worldwide</div>
+        <h1>Smart Banking for<br/><span>Smarter Future</span></h1>
+        <p>Manage, transfer, and grow your wealth with Z Bank's intelligent online banking platform — simple, secure, and built for you.</p>
+        <div class="hero-btns">
+            <a href="/login-page" class="hero-btn-primary">Login to Account</a>
+            <a href="/register-page" class="hero-btn-secondary">Create Account →</a>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="number">2M+</div>
+            <div class="label">Active Users</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">$50B+</div>
+            <div class="label">Transactions</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">150+</div>
+            <div class="label">Countries</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">99.9%</div>
+            <div class="label">Uptime</div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Security</a>
+            <a href="#">Contact</a>
+        </p>
+        <p style="margin-top:6px;">© 2026 Z Bank Financial Services. All rights reserved.</p>
+    </footer>
+</body>
+</html>

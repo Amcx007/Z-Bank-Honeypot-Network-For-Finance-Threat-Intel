@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — Coming Soon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:'Inter', sans-serif;
+            background:#060606;
+            color:white;
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            -webkit-font-smoothing:antialiased;
+        }
+
+        .nav {
+            position:fixed; top:0; left:0; right:0;
+            padding:18px 40px;
+            display:flex; justify-content:space-between; align-items:center;
+            border-bottom:1px solid rgba(255,255,255,0.05);
+            background:rgba(6,6,6,0.9);
+        }
+        .logo {
+            font-family:'Syne',sans-serif;
+            font-size:16px; font-weight:800;
+            letter-spacing:4px; color:white; text-decoration:none;
+        }
+        .back {
+            font-size:13px; color:rgba(255,255,255,0.35);
+            text-decoration:none; transition:color 0.2s;
+        }
+        .back:hover { color:white; }
+
+        .content {
+            text-align:center;
+            display:flex; flex-direction:column;
+            align-items:center; gap:28px;
+        }
+
+        /* ── SCENE ── */
+        .scene {
+            position:relative;
+            width:260px; height:220px;
+        }
+
+        /* Ground line */
+        .ground {
+            position:absolute;
+            bottom:0; left:20px; right:20px;
+            height:2px;
+            background:rgba(255,255,255,0.08);
+            border-radius:1px;
+        }
+
+        /* Wall */
+        .wall {
+            position:absolute;
+            bottom:2px; left:40px;
+            display:flex; flex-direction:column-reverse; gap:3px;
+        }
+        .row { display:flex; gap:3px; }
+        .brick {
+            width:32px; height:15px;
+            border-radius:3px;
+            background:#c8f135;
+            opacity:0;
+            animation:place 0.3s ease forwards;
+        }
+        .brick:nth-child(2) { background:rgba(200,241,53,0.65); }
+        .brick:nth-child(3) { background:rgba(200,241,53,0.4);  }
+
+        .row:nth-child(1) .brick { animation-delay:0.2s; }
+        .row:nth-child(2) .brick { animation-delay:0.8s; }
+        .row:nth-child(3) .brick { animation-delay:1.4s; }
+        .row:nth-child(4) .brick { animation-delay:2.0s; }
+        .row:nth-child(4) .brick:nth-child(1){ animation-delay:2.0s; }
+        .row:nth-child(4) .brick:nth-child(2){ animation-delay:2.3s; }
+
+        @keyframes place {
+            from { opacity:0; transform:translateY(-6px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        /* Worker */
+        .worker {
+            position:absolute;
+            bottom:2px; right:36px;
+            animation:bob 1s ease-in-out infinite;
+        }
+        @keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
+
+        .arm {
+            transform-origin:12px 20px;
+            animation:swing 0.6s ease-in-out infinite alternate;
+        }
+        @keyframes swing { from{transform:rotate(-25deg);} to{transform:rotate(20deg);} }
+
+        .hat {
+            animation:tilt 1s ease-in-out infinite;
+            transform-origin:center bottom;
+        }
+        @keyframes tilt { 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(-4deg);} }
+
+        /* Dust */
+        .dust { position:absolute; bottom:30px; right:22px; }
+        .puff {
+            position:absolute;
+            width:5px; height:5px; border-radius:50%;
+            background:rgba(200,241,53,0.35);
+            animation:puff 0.6s ease-out infinite;
+        }
+        .puff:nth-child(1){ animation-delay:0.0s; }
+        .puff:nth-child(2){ animation-delay:0.2s; left:7px; }
+        .puff:nth-child(3){ animation-delay:0.4s; left:-3px; }
+        @keyframes puff {
+            0%  { opacity:0.7; transform:translate(0,0); }
+            100%{ opacity:0;   transform:translate(0,-16px); }
+        }
+
+        /* ── TEXT ── */
+        h1 {
+            font-family:'Syne',sans-serif;
+            font-size:26px; font-weight:800;
+            letter-spacing:-0.4px;
+            opacity:0; animation:up 0.6s ease 0.3s forwards;
+        }
+        p {
+            font-size:14px; font-weight:300;
+            color:rgba(255,255,255,0.38);
+            max-width:280px; line-height:1.7;
+            opacity:0; animation:up 0.6s ease 0.5s forwards;
+        }
+        .pill {
+            display:inline-flex; align-items:center; gap:7px;
+            background:rgba(200,241,53,0.07);
+            border:1px solid rgba(200,241,53,0.2);
+            padding:6px 16px; border-radius:100px;
+            font-size:12px; font-weight:500; color:#c8f135;
+            opacity:0; animation:up 0.6s ease 0.7s forwards;
+        }
+        .dot {
+            width:5px; height:5px; border-radius:50%;
+            background:#c8f135;
+            animation:blink 1.5s ease-in-out infinite;
+        }
+        @keyframes blink  { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+        @keyframes up { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
+    </style>
+</head>
+<body>
+
+    <nav class="nav">
+        <a href="/dashboard" class="logo">Z BANK</a>
+        <a href="/dashboard" class="back">← Back</a>
+    </nav>
+
+    <div class="content">
+
+        <div class="scene">
+
+            <!-- Wall -->
+            <div class="wall">
+                <div class="row">
+                    <div class="brick"></div>
+                    <div class="brick"></div>
+                    <div class="brick"></div>
+                </div>
+                <div class="row">
+                    <div class="brick"></div>
+                    <div class="brick"></div>
+                    <div class="brick"></div>
+                </div>
+                <div class="row">
+                    <div class="brick"></div>
+                    <div class="brick"></div>
+                    <div class="brick"></div>
+                </div>
+                <div class="row">
+                    <div class="brick"></div>
+                    <div class="brick"></div>
+                </div>
+            </div>
+
+            <!-- Worker -->
+            <div class="worker">
+                <svg width="52" height="80" viewBox="0 0 52 80" fill="none">
+                    <!-- Hard hat -->
+                    <g class="hat">
+                        <ellipse cx="26" cy="14" rx="13" ry="7" fill="#c8f135"/>
+                        <rect x="13" y="19" width="26" height="4" rx="2" fill="#c8f135"/>
+                        <ellipse cx="26" cy="14" rx="9" ry="5" fill="#b8e025"/>
+                    </g>
+                    <!-- Head -->
+                    <circle cx="26" cy="30" r="9" fill="#f5c594"/>
+                    <!-- Eyes -->
+                    <circle cx="22.5" cy="29" r="1.5" fill="#333"/>
+                    <circle cx="29.5" cy="29" r="1.5" fill="#333"/>
+                    <!-- Smile -->
+                    <path d="M22 33 Q26 36.5 30 33" stroke="#333" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                    <!-- Body -->
+                    <rect x="17" y="39" width="18" height="22" rx="4" fill="#2563eb"/>
+                    <!-- Left arm -->
+                    <rect x="8"  y="40" width="9" height="5" rx="2.5" fill="#2563eb"/>
+                    <circle cx="7" cy="42" r="4" fill="#f5c594"/>
+                    <!-- Right arm (animated) -->
+                    <g class="arm">
+                        <rect x="26" y="39" width="5" height="14" rx="2.5" fill="#2563eb"/>
+                        <!-- Trowel handle -->
+                        <rect x="28" y="51" width="3" height="10" rx="1.5" fill="#8B5E3C"/>
+                        <!-- Trowel head -->
+                        <path d="M24 59 L36 59 L34 66 L26 66 Z" fill="#aaa"/>
+                    </g>
+                    <!-- Legs -->
+                    <rect x="18" y="60" width="7" height="16" rx="3.5" fill="#1e40af"/>
+                    <rect x="27" y="60" width="7" height="16" rx="3.5" fill="#1e40af"/>
+                    <!-- Boots -->
+                    <rect x="16" y="72" width="11" height="7" rx="3" fill="#222"/>
+                    <rect x="25" y="72" width="11" height="7" rx="3" fill="#222"/>
+                </svg>
+            </div>
+
+            <!-- Dust puffs near trowel -->
+            <div class="dust">
+                <div class="puff"></div>
+                <div class="puff"></div>
+                <div class="puff"></div>
+            </div>
+
+            <div class="ground"></div>
+        </div>
+
+        <h1>We're Building It</h1>
+        <p>Investment services and business loans are on the way. Our team is working hard!</p>
+        <div class="pill">
+            <div class="dot"></div>
+            Coming Q3 2026
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #050505;
+            --dark: #0d0d0d;
+            --card: #111111;
+            --card2: #161616;
+            --border: rgba(255,255,255,0.07);
+            --border2: rgba(255,255,255,0.12);
+            --text: #ffffff;
+            --muted: rgba(255,255,255,0.4);
+            --muted2: rgba(255,255,255,0.2);
+            --accent: #c8f135;
+            --accent-dim: rgba(200,241,53,0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--black);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--black); }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+
+                /* ===== NAVBAR ===== */
+                /* ===== NAVBAR ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            background: rgba(5,5,5,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 16px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: white;
+            text-decoration: none;
+        }
+        .nav-center {
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 100px;
+            padding: 4px;
+        }
+        .nav-center a {
+            padding: 8px 18px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.45);
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .nav-center a:hover {
+            color: rgba(255,255,255,0.85);
+            background: rgba(255,255,255,0.06);
+        }
+        .nav-center a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-weight: 500;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-avatar {
+            width: 34px;
+            height: 34px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.13);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-avatar:hover { background: rgba(255,255,255,0.13); }
+        .nav-logout {
+            padding: 8px 18px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 100px;
+            color: rgba(255,255,255,0.45);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-logout:hover { color: white; border-color: rgba(255,255,255,0.18); }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            padding: 120px 50px 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Noise texture overlay */
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glow */
+        .hero-glow {
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(200,241,53,0.06) 0%, transparent 65%);
+            top: -100px; right: -100px;
+            pointer-events: none;
+        }
+        .hero-glow2 {
+            position: absolute;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 65%);
+            bottom: 0; left: 200px;
+            pointer-events: none;
+        }
+
+        .hero-left { position: relative; z-index: 2; }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(200,241,53,0.2);
+            padding: 7px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+        }
+        .hero-eyebrow .dot {
+            width: 6px; height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 70px;
+            font-weight: 800;
+            line-height: 1.0;
+            letter-spacing: -3px;
+            margin-bottom: 24px;
+        }
+        .hero-title .line2 {
+            color: var(--accent);
+            display: block;
+        }
+        .hero-title .period { color: var(--accent); }
+
+        .hero-sub {
+            font-size: 16px;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 420px;
+            margin-bottom: 40px;
+        }
+
+        /* Email input */
+        .hero-cta {
+            display: flex;
+            gap: 0;
+            max-width: 420px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border2);
+            border-radius: 14px;
+            padding: 6px;
+            margin-bottom: 20px;
+        }
+        .hero-cta input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: white;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+        .hero-cta input::placeholder { color: var(--muted); }
+        .hero-cta button {
+            padding: 12px 22px;
+            background: var(--accent);
+            color: black;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Syne', sans-serif;
+            letter-spacing: 0.3px;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .hero-cta button:hover { opacity: 0.88; }
+
+        .hero-cta-note {
+            font-size: 12px;
+            color: var(--muted2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Hero right — cards */
+        .hero-right {
+            position: relative;
+            z-index: 2;
+            height: 500px;
+        }
+
+        .card-stack {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Bank card */
+        .bank-card {
+            position: absolute;
+            width: 320px;
+            height: 190px;
+            border-radius: 20px;
+            padding: 24px 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .bank-card-1 {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            top: 40px; left: 60px;
+            transform: rotate(-6deg);
+            z-index: 1;
+            animation: cardFloat1 5s ease-in-out infinite;
+        }
+        .bank-card-2 {
+            background: linear-gradient(135deg, var(--accent) 0%, #a8d420 100%);
+            top: 100px; left: 30px;
+            transform: rotate(-2deg);
+            z-index: 2;
+            animation: cardFloat2 5s ease-in-out infinite;
+        }
+        .bank-card-3 {
+            background: linear-gradient(135deg, #1e1e1e 0%, #333 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            top: 180px; left: 90px;
+            transform: rotate(3deg);
+            z-index: 3;
+            animation: cardFloat3 5s ease-in-out infinite;
+        }
+
+        @keyframes cardFloat1 {
+            0%,100% { transform: rotate(-6deg) translateY(0); }
+            50% { transform: rotate(-6deg) translateY(-12px); }
+        }
+        @keyframes cardFloat2 {
+            0%,100% { transform: rotate(-2deg) translateY(0); }
+            50% { transform: rotate(-2deg) translateY(-8px); }
+        }
+        @keyframes cardFloat3 {
+            0%,100% { transform: rotate(3deg) translateY(0); }
+            50% { transform: rotate(3deg) translateY(-15px); }
+        }
+
+        .card-chip {
+            width: 32px; height: 24px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            border-radius: 5px;
+        }
+        .card-chip.dark { background: rgba(255,255,255,0.15); }
+
+        .card-number {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            letter-spacing: 3px;
+            color: rgba(255,255,255,0.7);
+        }
+        .card-number.dark-text { color: rgba(0,0,0,0.5); }
+
+        .card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .card-name {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .card-amount {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        /* Floating notification */
+        .float-notif {
+            position: absolute;
+            right: 0; top: 50px;
+            background: #1a1a1a;
+            border: 1px solid var(--border2);
+            border-radius: 14px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+            animation: floatNotif 4s ease-in-out infinite;
+            white-space: nowrap;
+        }
+        @keyframes floatNotif {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .notif-icon {
+            width: 36px; height: 36px;
+            background: var(--accent-dim);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .notif-text .t1 { font-size: 13px; font-weight: 600; }
+        .notif-text .t2 { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+        .float-stat {
+            position: absolute;
+            right: 20px; bottom: 80px;
+            background: #161616;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            z-index: 10;
+            animation: floatStat 4s ease-in-out infinite;
+            animation-delay: -2s;
+        }
+        @keyframes floatStat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .float-stat .val {
+            font-family: 'Syne', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .float-stat .lbl {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 3px;
+        }
+
+        /* ===== TRUSTED SECTION ===== */
+        .trusted {
+            padding: 50px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .trusted-label {
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted2);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        .trusted-label span { color: var(--accent); }
+
+        .trusted-scroll {
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+            mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+        }
+        .trusted-track {
+            display: flex;
+            gap: 50px;
+            animation: scroll 20s linear infinite;
+            white-space: nowrap;
+        }
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        .trusted-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 0.5px;
+            transition: color 0.2s;
+        }
+        .trusted-item:hover { color: rgba(255,255,255,0.6); }
+        .trusted-item .icon { font-size: 18px; }
+
+        /* ===== FEATURES SECTION ===== */
+        #services {
+            padding: 100px 50px;
+            position: relative;
+        }
+
+        .section-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        .section-eyebrow::before {
+            content: '★';
+            color: var(--accent);
+            font-size: 13px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 50px;
+        }
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            max-width: 500px;
+        }
+
+        .open-account-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            background: white;
+            color: black;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .open-account-btn:hover { background: var(--accent); }
+        .open-account-btn .arrow {
+            width: 28px; height: 28px;
+            background: black;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .open-account-btn:hover .arrow { background: rgba(0,0,0,0.3); }
+
+        /* Feature grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .feature-top { grid-column: span 1; }
+        .features-bottom {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+
+        .feature-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 220px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .feature-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+        .features-bottom .feature-title { font-size: 18px; }
+
+        .feature-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .feature-icon-bottom {
+            font-size: 22px;
+            color: rgba(255,255,255,0.2);
+            margin-top: 30px;
+        }
+
+        /* ===== HOW IT WORKS SECTION ===== */
+        .how-section {
+            padding: 100px 50px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .how-left .section-title { margin-bottom: 16px; }
+        .how-left p {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .how-phone {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 30px 25px;
+            max-width: 260px;
+            margin: 0 auto;
+        }
+        .how-phone-header {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .how-phone-input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .how-phone-btn {
+            width: 100%;
+            padding: 11px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .how-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .how-step {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .how-step.open {
+            background: var(--card2);
+            border-color: var(--border2);
+        }
+        .how-step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .how-step-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .step-num {
+            width: 30px; height: 30px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+        }
+        .how-step.open .step-num {
+            background: var(--accent);
+            color: black;
+        }
+        .step-arrow {
+            color: var(--muted2);
+            transition: transform 0.3s;
+            font-size: 14px;
+        }
+        .how-step.open .step-arrow { transform: rotate(180deg); color: var(--accent); }
+        .step-content {
+            display: none;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-top: 14px;
+            padding-left: 42px;
+        }
+        .how-step.open .step-content { display: block; }
+        .learn-more {
+            font-size: 12px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        /* ===== ABOUT SECTION ===== */
+        .about-section {
+            padding: 100px 50px;
+            border-top: 1px solid var(--border);
+        }
+        .about-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+        .about-left .section-eyebrow { margin-bottom: 16px; }
+        .about-left .section-title { margin-bottom: 20px; }
+        .about-left p {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+        .about-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 40px;
+        }
+        .about-stat {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .about-stat .val {
+            font-family: 'Syne', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+        }
+        .about-stat .lbl {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .about-right {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .about-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s;
+        }
+        .about-card:hover {
+            border-color: var(--border2);
+            transform: translateX(6px);
+        }
+        .about-card-icon {
+            width: 48px; height: 48px;
+            background: rgba(200,241,53,0.08);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .about-card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .about-card-desc { font-size: 13px; color: var(--muted); }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 30px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--muted2);
+        }
+        .footer-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: white;
+        }
+        .footer-links { display: flex; gap: 24px; }
+        .footer-links a {
+            color: var(--muted2);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: white; }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up {
+            animation: fadeUp 0.7s ease forwards;
+            opacity: 0;
+        }
+        .fade-up-2 { animation-delay: 0.15s; }
+        .fade-up-3 { animation-delay: 0.3s; }
+        .fade-up-4 { animation-delay: 0.45s; }
+        .fade-up-5 { animation-delay: 0.6s; }
+
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: all 0.7s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.6); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-logo">Z BANK</a>
+        <div class="nav-center">
+            <a href="/dashboard">Home</a>
+            <a href="/dashboard#services">Services</a>
+            <a href="/dashboard#about">About Us</a>
+            <a href="/support">Support</a>
+        </div>
+        <div class="nav-right">
+            <a href="/profile" class="nav-avatar">👤</a>
+            <a href="/" class="nav-logout">← Logout</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-glow"></div>
+        <div class="hero-glow2"></div>
+
+        <div class="hero-left">
+            <div class="hero-eyebrow fade-up">
+                <span class="dot"></span>
+                Next-Gen Banking Platform
+            </div>
+            <h1 class="hero-title fade-up fade-up-2">
+                NEW ERA OF<br/>
+                <span class="line2">BANKING.</span>
+            </h1>
+            <p class="hero-sub fade-up fade-up-3">
+                Manage your finances with intelligence. Transfer money globally, track spending, and grow your wealth — all from one powerful platform.
+            </p>
+            <div class="hero-cta fade-up fade-up-4">
+                <input type="email" id="heroEmail" placeholder="Enter your email address"/>
+                <button onclick="handleEmailSubmit()">Get Started ↗</button>
+            </div>
+            <div class="hero-cta-note fade-up fade-up-5" id="ctaNote">
+                🔒 No spam. Bank-grade security. Cancel anytime.
+            </div>
+            <!-- Success animation -->
+            <div id="emailSuccess" style="display:none; margin-top:16px; animation: fadeUp 0.5s ease forwards;">
+                <div style="display:inline-flex; align-items:center; gap:12px; background:rgba(200,241,53,0.08); border:1px solid rgba(200,241,53,0.2); border-radius:14px; padding:14px 22px;">
+                    <div style="width:36px; height:36px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; animation: popIn 0.4s ease;">✓</div>
+                    <div>
+                        <div style="font-size:14px; font-weight:600; color:var(--accent);">You're on the list!</div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">Check your inbox for next steps.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <div class="card-stack">
+                <!-- Card 1 - back -->
+                <div class="bank-card bank-card-1">
+                    <div class="card-chip dark"></div>
+                    <div class="card-number">•••• •••• •••• 8873</div>
+                    <div class="card-bottom">
+                        <div class="card-name" style="color:rgba(255,255,255,0.5)">Current Acc</div>
+                        <div class="card-amount" style="color:rgba(255,255,255,0.4)">$8,120</div>
+                    </div>
+                </div>
+
+                <!-- Card 2 - accent/green -->
+                <div class="bank-card bank-card-2">
+                    <div class="card-chip"></div>
+                    <div class="card-number dark-text">•••• •••• •••• 3392</div>
+                    <div class="card-bottom">
+                        <div class="card-name" style="color:rgba(0,0,0,0.6)">Credit Card</div>
+                        <div class="card-amount" style="color:black">$2,450</div>
+                    </div>
+                </div>
+
+                <!-- Card 3 - front -->
+                <div class="bank-card bank-card-3">
+                    <div class="card-chip dark"></div>
+                    <div class="card-number">•••• •••• •••• 4521</div>
+                    <div class="card-bottom">
+                        <div class="card-name">John Anderson</div>
+                        <div class="card-amount">$24,350</div>
+                    </div>
+                </div>
+
+                <!-- Floating notification -->
+                <div class="float-notif">
+                    <div class="notif-icon">✅</div>
+                    <div class="notif-text">
+                        <div class="t1">Transfer Successful</div>
+                        <div class="t2">$500 sent to John Smith</div>
+                    </div>
+                </div>
+
+                <!-- Floating stat -->
+                <div class="float-stat">
+                    <div class="val">10x</div>
+                    <div class="lbl">Faster transfers</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRUSTED BY -->
+    <section class="trusted reveal">
+        <div class="trusted-label">Trusted By More Than <span>+10,000</span> Users Worldwide</div>
+        <div class="trusted-scroll">
+            <div class="trusted-track">
+                <div class="trusted-item"><span class="icon">◈</span> Notion</div>
+                <div class="trusted-item"><span class="icon">#</span> Slack</div>
+                <div class="trusted-item"><span class="icon">❋</span> Loom</div>
+                <div class="trusted-item"><span class="icon">◉</span> Monday</div>
+                <div class="trusted-item"><span class="icon">⟡</span> Afterpay</div>
+                <div class="trusted-item"><span class="icon">◈</span> Stripe</div>
+                <div class="trusted-item"><span class="icon">#</span> PayPal</div>
+                <div class="trusted-item"><span class="icon">❋</span> Wise</div>
+                <div class="trusted-item"><span class="icon">◉</span> Revolut</div>
+                <div class="trusted-item"><span class="icon">⟡</span> N26</div>
+                <!-- duplicate for seamless loop -->
+                <div class="trusted-item"><span class="icon">◈</span> Notion</div>
+                <div class="trusted-item"><span class="icon">#</span> Slack</div>
+                <div class="trusted-item"><span class="icon">❋</span> Loom</div>
+                <div class="trusted-item"><span class="icon">◉</span> Monday</div>
+                <div class="trusted-item"><span class="icon">⟡</span> Afterpay</div>
+                <div class="trusted-item"><span class="icon">◈</span> Stripe</div>
+                <div class="trusted-item"><span class="icon">#</span> PayPal</div>
+                <div class="trusted-item"><span class="icon">❋</span> Wise</div>
+                <div class="trusted-item"><span class="icon">◉</span> Revolut</div>
+                <div class="trusted-item"><span class="icon">⟡</span> N26</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES / SERVICES -->
+    <section id="services" style="padding: 100px 50px;">
+        <div class="section-eyebrow reveal">Features</div>
+        <div class="section-header reveal">
+            <h2 class="section-title">Browse our set of<br/>banking services</h2>
+            <a href="/accounts" class="open-account-btn">
+                Open Your Account
+                <span class="arrow">↗</span>
+            </a>
+        </div>
+
+        <div class="features-grid reveal">
+            <a href="/accounts" class="feature-card feature-top">
+                <div>
+                    <div class="feature-title">Checking Accounts</div>
+                    <div class="feature-desc">Manage your day-to-day finances with zero fees, instant transfers, and real-time balance tracking across all your accounts.</div>
+                </div>
+                <div class="feature-icon-bottom">◉</div>
+            </a>
+
+            <a href="/cards" class="feature-card feature-top">
+                <div>
+                    <div class="feature-title">Cards</div>
+                    <div class="feature-desc">Manage your debit and credit cards, set limits, freeze cards and track spending by card.</div>
+                </div>
+                <div class="feature-icon-bottom">▭</div>
+            </a>
+        </div>
+
+        <div class="features-bottom reveal" style="margin-top:14px;">
+            <a href="/profile" class="feature-card">
+                <div>
+                    <div class="feature-title">My Profile</div>
+                    <div class="feature-desc">Manage your personal details, security settings, and notification preferences.</div>
+                </div>
+                <div class="feature-icon-bottom">👤</div>
+            </a>
+            <a href="/investments" class="feature-card">
+                <div>
+                    <div class="feature-title">Investment Services</div>
+                    <div class="feature-desc">Grow your wealth with smart investment tools and portfolio tracking.</div>
+                </div>
+                <div class="feature-icon-bottom">📈</div>
+            </a>
+            <a href="/business-loans" class="feature-card">
+                <div>
+                    <div class="feature-title">Business Loans</div>
+                    <div class="feature-desc">Fast business financing with flexible terms and instant approval.</div>
+                </div>
+                <div class="feature-icon-bottom">📋</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-section">
+        <div class="how-left reveal">
+            <div class="section-eyebrow" style="margin-bottom:16px;">◉ WHY US?</div>
+            <h2 class="section-title" style="margin-bottom:16px;">How it works?</h2>
+            <p>Getting started with Z Bank takes minutes. Our streamlined onboarding gets you banking faster than any traditional bank.</p>
+
+            <div class="how-steps">
+                <div class="how-step open" onclick="toggleStep(this)">
+                    <div class="how-step-header">
+                        <div class="how-step-title">
+                            <div class="step-num">◉</div>
+                            Create account
+                        </div>
+                        <span class="step-arrow">▼</span>
+                    </div>
+                    <div class="step-content">
+                        Sign up in under 2 minutes with just your email and phone number. No paperwork, no branch visits required.
+                        <br/><a href="/register-page" class="learn-more">LEARN MORE →</a>
+                    </div>
+                </div>
+
+                <div class="how-step" onclick="toggleStep(this)">
+                    <div class="how-step-header">
+                        <div class="how-step-title">
+                            <div class="step-num">▭</div>
+                            Get your card
+                        </div>
+                        <span class="step-arrow">›</span>
+                    </div>
+                    <div class="step-content">
+                        Your virtual card is ready instantly. Physical card arrives within 3-5 business days, delivered to your door.
+                        <br/><a href="#" class="learn-more">LEARN MORE →</a>
+                    </div>
+                </div>
+
+                <div class="how-step" onclick="toggleStep(this)">
+                    <div class="how-step-header">
+                        <div class="how-step-title">
+                            <div class="step-num">📈</div>
+                            Start investing
+                        </div>
+                        <span class="step-arrow">›</span>
+                    </div>
+                    <div class="step-content">
+                        Access stocks, ETFs, and crypto from your Z Bank dashboard. Start investing with as little as $1.
+                        <br/><a href="#" class="learn-more">LEARN MORE →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="how-right reveal">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+
+                <!-- Step 1 card -->
+                <div class="how-step-card" id="stepCard1" style="background:var(--card); border:1px solid rgba(200,241,53,0.25); border-radius:20px; padding:28px; position:relative; overflow:hidden; transition: all 0.4s ease;">
+                    <div style="position:absolute; top:16px; right:16px; background:rgba(200,241,53,0.08); border:1px solid rgba(200,241,53,0.15); border-radius:8px; padding:5px 12px; font-size:11px; color:var(--accent); font-weight:600; letter-spacing:1px; text-transform:uppercase;">Active</div>
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+                        <div style="width:42px; height:42px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; font-family:'Syne',sans-serif; color:black; flex-shrink:0;">1</div>
+                        <div style="font-size:16px; font-weight:700;">Create Your Account</div>
+                    </div>
+                    <div style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px;">Sign up in 2 minutes with just your email. No paperwork or branch visits required.</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; padding:7px 14px; font-size:12px; color:var(--muted);">✉ Email</div>
+                        <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; padding:7px 14px; font-size:12px; color:var(--muted);">☎ Phone</div>
+                        <div style="background:rgba(200,241,53,0.12); border:1px solid rgba(200,241,53,0.25); border-radius:8px; padding:7px 14px; font-size:12px; color:var(--accent); font-weight:600;">✓ Instant</div>
+                    </div>
+                </div>
+
+                <!-- Step 2 card -->
+                <div class="how-step-card" id="stepCard2" style="background:var(--card); border:1px solid var(--border); border-radius:20px; padding:28px; transition: all 0.4s ease;">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+                        <div style="width:42px; height:42px; background:rgba(255,255,255,0.06); border:1px solid var(--border2); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; font-family:'Syne',sans-serif; color:white; flex-shrink:0;">2</div>
+                        <div style="font-size:16px; font-weight:700;">Get Your Card</div>
+                    </div>
+                    <div style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px;">Virtual card ready instantly. Physical card delivered to your door in 3–5 days.</div>
+                    <div style="background:linear-gradient(135deg, #1c1c1c 0%, #252525 100%); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:12px; color:rgba(255,255,255,0.35); letter-spacing:3px;">•••• •••• •••• 4521</div>
+                        <div style="font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--accent);">Z</div>
+                    </div>
+                </div>
+
+                <!-- Step 3 card -->
+                <div class="how-step-card" id="stepCard3" style="background:var(--card); border:1px solid var(--border); border-radius:20px; padding:28px; transition: all 0.4s ease;">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+                        <div style="width:42px; height:42px; background:rgba(255,255,255,0.06); border:1px solid var(--border2); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; font-family:'Syne',sans-serif; color:white; flex-shrink:0;">3</div>
+                        <div style="font-size:16px; font-weight:700;">Start Investing</div>
+                    </div>
+                    <div style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:18px;">Access stocks, ETFs, and crypto. Start with as little as $1.</div>
+                    <!-- Animated bar chart -->
+                    <div style="display:flex; gap:6px; align-items:flex-end; height:60px;">
+                        <div class="bar-anim" style="flex:1; background:rgba(200,241,53,0.15); border-radius:5px 5px 0 0; height:35%; transition:height 1s ease;"></div>
+                        <div class="bar-anim" style="flex:1; background:rgba(200,241,53,0.25); border-radius:5px 5px 0 0; height:55%; transition:height 1s ease 0.1s;"></div>
+                        <div class="bar-anim" style="flex:1; background:rgba(200,241,53,0.3); border-radius:5px 5px 0 0; height:40%; transition:height 1s ease 0.2s;"></div>
+                        <div class="bar-anim" style="flex:1; background:var(--accent); border-radius:5px 5px 0 0; height:90%; transition:height 1s ease 0.3s;"></div>
+                        <div class="bar-anim" style="flex:1; background:rgba(200,241,53,0.5); border-radius:5px 5px 0 0; height:70%; transition:height 1s ease 0.4s;"></div>
+                        <div class="bar-anim" style="flex:1; background:rgba(200,241,53,0.35); border-radius:5px 5px 0 0; height:60%; transition:height 1s ease 0.5s;"></div>
+                        <div class="bar-anim" style="flex:1; background:rgba(200,241,53,0.2); border-radius:5px 5px 0 0; height:45%; transition:height 1s ease 0.6s;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:var(--muted2);">
+                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="about-section">
+        <div class="about-inner">
+            <div class="about-left reveal">
+                <div class="section-eyebrow" style="margin-bottom:16px;">◉ MORE ABOUT US</div>
+                <h2 class="section-title" style="margin-bottom:20px;">Discover the mission and story behind Z Bank</h2>
+                <p>We believe everyone deserves access to world-class financial tools. Z Bank was built from the ground up to democratize banking — making it smarter, faster, and more transparent for everyone.</p>
+                <div class="about-stats">
+                    <div class="about-stat">
+                        <div class="val">2M+</div>
+                        <div class="lbl">Active customers worldwide</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="val">$50B</div>
+                        <div class="lbl">Transactions processed</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="val">150+</div>
+                        <div class="lbl">Countries supported</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="val">99.9%</div>
+                        <div class="lbl">Platform uptime</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-right reveal">
+                <div class="about-card">
+                    <div class="about-card-icon" style="background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5); font-size:18px; font-family:'Syne',sans-serif; font-weight:700;">◉</div>
+                    <div style="flex:1;">
+                        <div class="about-card-title">Smart Account Management</div>
+                        <div class="about-card-desc">View all accounts, balances and activity in one place</div>
+                    </div>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon" style="background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5); font-size:18px; font-family:'Syne',sans-serif; font-weight:700;">↗</div>
+                    <div style="flex:1;">
+                        <div class="about-card-title">Global Transfers</div>
+                        <div class="about-card-desc">Send money to 150+ countries instantly and securely</div>
+                    </div>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon" style="background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5); font-size:18px; font-family:'Syne',sans-serif; font-weight:700;">▦</div>
+                    <div style="flex:1;">
+                        <div class="about-card-title">Spending Analytics</div>
+                        <div class="about-card-desc">AI-powered insights to help you save more money</div>
+                    </div>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon" style="background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5); font-size:18px; font-family:'Syne',sans-serif; font-weight:700;">⬡</div>
+                    <div style="flex:1;">
+                        <div class="about-card-title">Bank-Grade Security</div>
+                        <div class="about-card-desc">256-bit encryption with biometric authentication</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <span>© 2026 Z Bank Financial Services. All rights reserved.</span>
+        <div class="footer-links">
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/support">Support</a>
+            <a href="#">Contact</a>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll reveal
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, i * 80);
+                }
+            });
+        }, { threshold: 0.1 });
+        reveals.forEach(el => observer.observe(el));
+
+        // Accordion - fixed toggle + sync right side cards
+        function toggleStep(el) {
+            const isOpen = el.classList.contains('open');
+            document.querySelectorAll('.how-step').forEach(s => s.classList.remove('open'));
+
+            // Reset all right cards
+            ['stepCard1','stepCard2','stepCard3'].forEach(id => {
+                const c = document.getElementById(id);
+                if(c) {
+                    c.style.borderColor = 'var(--border)';
+                    c.style.opacity = '0.5';
+                    c.style.transform = 'scale(0.98)';
+                }
+            });
+
+            if (!isOpen) {
+                el.classList.add('open');
+                // Find which step
+                const steps = Array.from(document.querySelectorAll('.how-step'));
+                const idx = steps.indexOf(el) + 1;
+                const card = document.getElementById('stepCard' + idx);
+                if (card) {
+                    card.style.borderColor = 'rgba(200,241,53,0.3)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1)';
+                }
+            } else {
+                // If closed all, reset all to full opacity
+                ['stepCard1','stepCard2','stepCard3'].forEach(id => {
+                    const c = document.getElementById(id);
+                    if(c) {
+                        c.style.borderColor = 'var(--border)';
+                        c.style.opacity = '1';
+                        c.style.transform = 'scale(1)';
+                    }
+                });
+            }
+        }
+
+        // Init - highlight first card on load
+        window.addEventListener('load', () => {
+            const first = document.getElementById('stepCard1');
+            if (first) { first.style.borderColor = 'rgba(200,241,53,0.25)'; }
+            ['stepCard2','stepCard3'].forEach(id => {
+                const c = document.getElementById(id);
+                if(c) { c.style.opacity = '0.6'; }
+            });
+        });
+
+        // Email submit animation
+        function handleEmailSubmit() {
+            const email = document.getElementById('heroEmail').value;
+            if (!email || !email.includes('@')) {
+                document.getElementById('heroEmail').style.borderColor = 'rgba(255,80,80,0.5)';
+                document.getElementById('heroEmail').placeholder = 'Please enter a valid email';
+                setTimeout(() => {
+                    document.getElementById('heroEmail').style.borderColor = '';
+                    document.getElementById('heroEmail').placeholder = 'Enter your email address';
+                }, 2000);
+                return;
+            }
+            // Hide CTA and show success
+            document.querySelector('.hero-cta').style.display = 'none';
+            document.getElementById('ctaNote').style.display = 'none';
+            document.getElementById('emailSuccess').style.display = 'block';
+        }
+
+        // Smooth scroll
+        document.querySelector('a[href="#services"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('services').scrollIntoView({ behavior: 'smooth' });
+        });
+        document.querySelector('a[href="#about"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('about').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Enter key on email
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.activeElement.id === 'heroEmail') {
+                handleEmailSubmit();
+            }
+        });
+    </script>
+
+    <script>
+        // Auto highlight active nav link
+        (function() {
+            var path = window.location.pathname;
+            document.querySelectorAll('.nav-center a').forEach(function(a) {
+                a.classList.remove('active');
+                var href = a.getAttribute('href');
+                if (!href || href === '#' || href.indexOf('#') > 0) return;
+                if (path === href) {
+                    a.classList.add('active');
+                } else if (href !== '/' && path.startsWith(href)) {
+                    a.classList.add('active');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

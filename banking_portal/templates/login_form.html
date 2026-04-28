@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <title>Z Bank — Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Background grid */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-glow {
+            position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(200,241,53,0.04) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -100px; right: -100px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 20px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: white;
+            text-decoration: none;
+        }
+        .nav-back {
+            padding: 8px 18px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 100px;
+            color: rgba(255,255,255,0.45);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-back:hover { color: white; border-color: rgba(255,255,255,0.18); }
+
+        /* Glass Card */
+        .glass-card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 48px 44px;
+            width: 420px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        }
+
+        .card-header { margin-bottom: 32px; }
+        .card-header h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        .card-header p { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+        /* Error messages */
+        .error-box {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #fca5a5;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .error-box .err-icon {
+            width: 18px; height: 18px;
+            background: rgba(239,68,68,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        /* Attempt warning */
+        .attempt-warning {
+            background: rgba(234,179,8,0.08);
+            border: 1px solid rgba(234,179,8,0.2);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #fde68a;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 13px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 400;
+            color: white;
+            outline: none;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input::placeholder { color: rgba(255,255,255,0.2); }
+        .form-group input:focus {
+            border-color: rgba(200,241,53,0.4);
+            background: rgba(255,255,255,0.07);
+        }
+        .form-group input.error-field {
+            border-color: rgba(239,68,68,0.4);
+        }
+
+        .forgot {
+            text-align: right;
+            margin-top: -10px;
+            margin-bottom: 22px;
+        }
+        .forgot a {
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .forgot a:hover { color: rgba(255,255,255,0.6); }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.2px;
+        }
+        .btn-login:hover {
+            background: #c8f135;
+            transform: translateY(-1px);
+        }
+        .btn-login:active { transform: translateY(0); }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 22px 0;
+            color: rgba(255,255,255,0.15);
+            font-size: 12px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.07);
+        }
+
+        .register-link {
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+        }
+        .register-link a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .register-link a:hover { color: #c8f135; }
+
+        /* Security note */
+        .security-note {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* Loading overlay */
+        .loading {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(255,255,255,0.08);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        .loading-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Verifying credentials...</div>
+    </div>
+
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="nav-logo">Z BANK</a>
+        <a href="/" class="nav-back">← Back</a>
+    </nav>
+
+    <!-- Login Card -->
+    <div class="glass-card">
+        <div class="card-header">
+            <h2>Welcome back</h2>
+            <p>Sign in to your Z Bank account</p>
+        </div>
+
+        <!-- Error messages from Flask -->
+        {% if error == 'invalid_user' %}
+        <div class="error-box">
+            <div class="err-icon">!</div>
+            <span>User not found. Please check your username.</span>
+        </div>
+        {% elif error == 'wrong_password' %}
+        <div class="error-box">
+            <div class="err-icon">!</div>
+            <span>Incorrect password. Please try again.</span>
+        </div>
+        {% endif %}
+
+        <!-- Client side error (empty fields) -->
+        <div id="clientError" class="error-box" style="display:none;">
+            <div class="err-icon">!</div>
+            <span>Please enter both username and password.</span>
+        </div>
+
+        <div class="form-group">
+            <label>Username</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter your username"
+                autocomplete="off"
+                class="{{ 'error-field' if error == 'invalid_user' else '' }}"
+                value="{{ request.form.get('username', '') if error else '' }}"
+            />
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                class="{{ 'error-field' if error == 'wrong_password' else '' }}"
+            />
+        </div>
+
+        <div class="forgot"><a href="#">Forgot password?</a></div>
+
+        <button class="btn-login" onclick="doLogin()">Sign In →</button>
+
+        <div class="divider">or</div>
+
+        <div class="register-link">
+            Don't have an account? <a href="/register-page">Create one</a>
+        </div>
+
+        <div class="security-note">
+            🔒 256-bit SSL encryption
+        </div>
+    </div>
+
+    <script>
+        function doLogin() {
+            var u = document.getElementById('username').value.trim();
+            var p = document.getElementById('password').value.trim();
+
+            // Client side validation
+            if (!u || !p) {
+                document.getElementById('clientError').style.display = 'flex';
+                return;
+            }
+
+            document.getElementById('clientError').style.display = 'none';
+            document.getElementById('loading').style.display = 'flex';
+
+            // Submit as regular form POST so Flask handles redirect
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/login';
+
+            var u_field = document.createElement('input');
+            u_field.name = 'username';
+            u_field.value = u;
+
+            var p_field = document.createElement('input');
+            p_field.name = 'password';
+            p_field.value = p;
+
+            form.appendChild(u_field);
+            form.appendChild(p_field);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Enter key support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') doLogin();
+        });
+
+        // Auto focus username if no error on password
+        window.onload = function() {
+            {% if error == 'wrong_password' %}
+                document.getElementById('password').focus();
+            {% else %}
+                document.getElementById('username').focus();
+            {% endif %}
+        };
+    </script>
+</body>
+</html>

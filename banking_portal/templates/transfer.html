@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — Transfer Money</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--black:#050505;--card:#0f0f0f;--card2:#141414;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--muted:rgba(255,255,255,0.38);--muted2:rgba(255,255,255,0.18);--accent:#c8f135;--accent-dim:rgba(200,241,53,0.1);--green:#22c55e;--red:#ef4444;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--black);color:#f0f0f0;min-height:100vh;-webkit-font-smoothing:antialiased;}
+        ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#222;border-radius:4px;}
+        .navbar{position:sticky;top:0;background:rgba(5,5,5,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);padding:16px 48px;display:flex;justify-content:space-between;align-items:center;z-index:100;}
+        .nav-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:4px;color:white;text-decoration:none;}
+        .nav-center{display:flex;gap:2px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:4px;}
+        .nav-center a{padding:8px 18px;border-radius:100px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);text-decoration:none;transition:all 0.2s;white-space:nowrap;}
+        .nav-center a:hover{color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.06);}
+        .nav-center a.active{background:rgba(255,255,255,0.1);color:white;}
+        .nav-right{display:flex;align-items:center;gap:12px;}
+        .nav-avatar{width:34px;height:34px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none;transition:all 0.2s;}
+        .nav-avatar:hover{background:rgba(255,255,255,0.13);}
+        .nav-logout{padding:8px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;color:rgba(255,255,255,0.45);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;}
+        .nav-logout:hover{color:white;border-color:rgba(255,255,255,0.18);}
+        .page{padding:44px 48px;max-width:1200px;margin:0 auto;}
+        .page-header{margin-bottom:36px;opacity:0;animation:fadeUp 0.5s ease 0.05s forwards;}
+        .page-tag{display:inline-flex;align-items:center;gap:7px;background:var(--accent-dim);border:1px solid rgba(200,241,53,0.18);padding:5px 14px;border-radius:100px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:14px;}
+        .page-tag .dot{width:5px;height:5px;background:var(--accent);border-radius:50%;}
+        .page-header h1{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-0.5px;color:white;margin-bottom:6px;}
+        .page-header p{font-size:14px;color:var(--muted);}
+        .tabs{display:flex;gap:8px;margin-bottom:28px;opacity:0;animation:fadeUp 0.5s ease 0.1s forwards;}
+        .tab{padding:9px 20px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;}
+        .tab:hover{border-color:var(--border2);color:white;}
+        .tab.active{background:white;color:black;border-color:white;font-weight:600;}
+        .layout{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
+        .panel{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;opacity:0;}
+        .panel:nth-child(1){animation:fadeUp 0.5s ease 0.15s forwards;}
+        .panel:nth-child(2){animation:fadeUp 0.5s ease 0.22s forwards;}
+        .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+        .ph-title{font-size:15px;font-weight:700;color:white;}
+        .bene-list{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
+        .bene-item{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;transition:all 0.2s;}
+        .bene-item:hover{transform:translateY(-2px);}
+        .bene-avatar{width:46px;height:46px;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;transition:all 0.2s;}
+        .bene-item:hover .bene-avatar{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25);}
+        .bene-item.selected .bene-avatar{background:var(--accent-dim);border-color:rgba(200,241,53,0.35);}
+        .bene-name{font-size:11px;font-weight:500;color:var(--muted);}
+        .divider{height:1px;background:var(--border);margin:20px 0;}
+        .form-group{margin-bottom:18px;}
+        .form-group label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+        .form-group input,.form-group select{width:100%;padding:13px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;font-size:14px;color:white;outline:none;transition:all 0.2s;font-family:'Inter',sans-serif;-webkit-appearance:none;}
+        .form-group input::placeholder{color:rgba(255,255,255,0.2);}
+        .form-group input:focus,.form-group select:focus{border-color:rgba(255,255,255,0.22);background:rgba(255,255,255,0.06);}
+        .form-group select option{background:#1a1a1a;}
+        .amount-wrap{position:relative;}
+        .amount-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:20px;font-weight:700;color:rgba(255,255,255,0.3);pointer-events:none;}
+        .amount-input{padding-left:36px!important;font-size:24px!important;font-weight:700!important;letter-spacing:-0.5px;}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+        .arrow-div{display:flex;align-items:center;justify-content:center;margin:18px 0;gap:14px;color:var(--muted2);font-size:12px;}
+        .arrow-div::before,.arrow-div::after{content:'';flex:1;height:1px;background:var(--border);}
+        .arrow-circle{width:34px;height:34px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);}
+        .btn-transfer{width:100%;padding:15px;background:white;color:black;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;margin-top:6px;}
+        .btn-transfer:hover{background:var(--accent);transform:translateY(-1px);}
+        .right-col{display:flex;flex-direction:column;gap:14px;}
+        .rate-banner{background:rgba(200,241,53,0.06);border:1px solid rgba(200,241,53,0.12);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted);}
+        .rate-val{color:var(--accent);font-weight:600;}
+        .rate-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;}
+        @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+        .sum-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;}
+        .sum-row:last-child{border-bottom:none;}
+        .sum-label{color:var(--muted);}
+        .sum-val{color:white;font-weight:600;}
+        .sum-row.total .sum-label{color:white;font-weight:700;font-size:14px;}
+        .sum-row.total .sum-val{color:var(--accent);font-weight:700;font-size:16px;}
+        .sec-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px;color:var(--muted);}
+        .sec-item:last-child{border-bottom:none;}
+        .sec-icon{width:30px;height:30px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(255,255,255,0.3);flex-shrink:0;}
+        .balance-info{background:rgba(200,241,53,0.05);border:1px solid rgba(200,241,53,0.12);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--muted);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+        .balance-info span{color:var(--accent);font-weight:700;font-size:15px;}
+        .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:999;align-items:center;justify-content:center;}
+        .overlay-card{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:48px 44px;text-align:center;width:380px;animation:popIn 0.35s ease;}
+        .overlay-icon{width:60px;height:60px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 18px;}
+        .overlay-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;margin-bottom:8px;}
+        .overlay-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6;}
+        .overlay-txn{background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--muted);margin-bottom:24px;}
+        .overlay-txn span{color:white;font-weight:600;}
+        .btn-done{width:100%;padding:13px;background:white;color:black;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;}
+        .btn-done:hover{background:var(--accent);}
+        .loading{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:998;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+        .spinner{width:42px;height:42px;border:3px solid rgba(255,255,255,0.08);border-top-color:white;border-radius:50%;animation:spin 0.75s linear infinite;}
+        .loading-text{font-size:14px;color:var(--muted);font-weight:500;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes popIn{from{opacity:0;transform:scale(0.92);}to{opacity:1;transform:scale(1);}}
+        .footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;justify-content:space-between;align-items:center;margin-top:50px;}
+        .footer-copy{font-size:12px;color:var(--muted2);}
+        .footer-links{display:flex;gap:20px;}
+        .footer-links a{font-size:12px;color:var(--muted2);text-decoration:none;transition:color 0.2s;}
+        .footer-links a:hover{color:white;}
+    </style>
+</head>
+<body>
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Processing your transfer...</div>
+    </div>
+
+    <!-- Success overlay -->
+    <div class="overlay" id="successOverlay">
+        <div class="overlay-card">
+            <div class="overlay-icon">✓</div>
+            <div class="overlay-title">Transfer Successful!</div>
+            <div class="overlay-sub">Your money is on its way. The recipient will be notified shortly.</div>
+            <div class="overlay-txn">Transaction ID: <span id="txnIdDisplay">—</span></div>
+            <button class="btn-done" onclick="window.location.href='/transactions'">View Transactions</button>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-logo">Z BANK</a>
+        <div class="nav-center">
+            <a href="/dashboard">Home</a>
+            <a href="/dashboard#services">Services</a>
+            <a href="/dashboard#about">About Us</a>
+            <a href="/support">Support</a>
+        </div>
+        <div class="nav-right">
+            <a href="/profile" class="nav-avatar">👤</a>
+            <a href="/logout" class="nav-logout">← Logout</a>
+        </div>
+    </nav>
+
+    <div class="page">
+        <div class="page-header">
+            <div class="page-tag"><span class="dot"></span>Transfer Money</div>
+            <h1>Send Money Anywhere</h1>
+            <p>Fast, secure transfers for {{ user.full_name }}</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="setTab(this)">International</button>
+            <button class="tab" onclick="setTab(this)">Domestic</button>
+            <button class="tab" onclick="setTab(this)">To Mobile</button>
+            <button class="tab" onclick="setTab(this)">Instant Pay</button>
+        </div>
+
+        <div class="layout">
+            <!-- Form -->
+            <div class="panel">
+                <div class="ph">
+                    <div class="ph-title">Recent Beneficiaries</div>
+                    <span style="font-size:12px;color:var(--muted);cursor:pointer;">+ Add New</span>
+                </div>
+                <div class="bene-list">
+                    <div class="bene-item selected" onclick="selectBene(this,'John Smith','ACC-4521-US')">
+                        <div class="bene-avatar">JS</div>
+                        <div class="bene-name">John</div>
+                    </div>
+                    <div class="bene-item" onclick="selectBene(this,'Sarah Kim','ACC-8821-UK')">
+                        <div class="bene-avatar">SK</div>
+                        <div class="bene-name">Sarah</div>
+                    </div>
+                    <div class="bene-item" onclick="selectBene(this,'Mike Chen','ACC-3392-SG')">
+                        <div class="bene-avatar">MC</div>
+                        <div class="bene-name">Mike</div>
+                    </div>
+                    <div class="bene-item">
+                        <div class="bene-avatar" style="font-size:20px;color:var(--muted);">+</div>
+                        <div class="bene-name">New</div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Show real balance from DB -->
+                <div class="balance-info">
+                    Available Balance: <span>${{ "%.2f"|format(user.balance) }}</span>
+                </div>
+
+                <div class="form-group">
+                    <label>From Account</label>
+                    <select id="fromAccount">
+                        <option value="{{ user.account_number }}">
+                            {{ user.account_type|capitalize }} — {{ user.account_number }} (${{ "%.2f"|format(user.balance) }})
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Amount</label>
+                    <div class="amount-wrap">
+                        <span class="amount-prefix">$</span>
+                        <input type="number" class="amount-input" id="amount" placeholder="0.00" oninput="updateSummary()" min="0.01" max="{{ user.balance }}"/>
+                    </div>
+                </div>
+
+                <div class="arrow-div">
+                    <div class="arrow-circle">↓</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Destination Country</label>
+                    <select id="destCountry" onchange="updateRate()">
+                        <option value="US">🇺🇸 United States (USD)</option>
+                        <option value="UK">🇬🇧 United Kingdom (GBP)</option>
+                        <option value="EU">🇪🇺 Europe (EUR)</option>
+                        <option value="IN">🇮🇳 India (INR)</option>
+                        <option value="SG">🇸🇬 Singapore (SGD)</option>
+                        <option value="AE">🇦🇪 UAE (AED)</option>
+                        <option value="JP">🇯🇵 Japan (JPY)</option>
+                        <option value="AU">🇦🇺 Australia (AUD)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Beneficiary Full Name</label>
+                    <input type="text" id="beneficiaryName" placeholder="Enter recipient name"/>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Account / IBAN</label>
+                        <input type="text" id="toAccount" placeholder="Account number"/>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>SWIFT / BIC Code</label>
+                        <input type="text" id="swiftCode" placeholder="SWIFT code"/>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:18px;">
+                    <label>Transfer Speed</label>
+                    <select id="transferType" onchange="updateSummary()">
+                        <option value="instant">Instant — arrives in minutes ($5 fee)</option>
+                        <option value="same">Same Day RTGS ($2 fee)</option>
+                        <option value="standard">Standard 1–3 days (Free)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Remarks (Optional)</label>
+                    <input type="text" id="remarks" placeholder="Add a note"/>
+                </div>
+
+                <button class="btn-transfer" onclick="doTransfer()">Confirm Transfer →</button>
+            </div>
+
+            <!-- Right -->
+            <div class="right-col">
+                <div class="rate-banner">
+                    <div class="rate-dot"></div>
+                    <span>1 USD = <span class="rate-val" id="rateDisplay">1.00 USD</span> · Live rate</span>
+                </div>
+
+                <div class="panel" style="animation-delay:0.22s;">
+                    <div class="ph"><div class="ph-title">Transfer Summary</div></div>
+                    <div class="sum-row">
+                        <span class="sum-label">You send</span>
+                        <span class="sum-val" id="sumAmount">$0.00</span>
+                    </div>
+                    <div class="sum-row">
+                        <span class="sum-label">Transfer fee</span>
+                        <span class="sum-val" id="sumFee">$5.00</span>
+                    </div>
+                    <div class="sum-row">
+                        <span class="sum-label">Exchange rate</span>
+                        <span class="sum-val" id="sumRate">1.00</span>
+                    </div>
+                    <div class="sum-row">
+                        <span class="sum-label">Recipient gets</span>
+                        <span class="sum-val" id="sumRecipient">$0.00</span>
+                    </div>
+                    <div class="sum-row">
+                        <span class="sum-label">Estimated arrival</span>
+                        <span class="sum-val" id="sumArrival">In minutes</span>
+                    </div>
+                    <div class="divider" style="margin:8px 0;"></div>
+                    <div class="sum-row total">
+                        <span class="sum-label">Total deducted</span>
+                        <span class="sum-val" id="sumTotal">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="panel" style="animation-delay:0.28s;">
+                    <div class="ph" style="margin-bottom:16px;"><div class="ph-title">Security</div></div>
+                    <div class="sec-item"><div class="sec-icon">⬡</div><span>256-bit SSL encryption on all transfers</span></div>
+                    <div class="sec-item"><div class="sec-icon">◉</div><span>SWIFT GPI tracked international transfers</span></div>
+                    <div class="sec-item"><div class="sec-icon">✓</div><span>Real-time fraud monitoring active</span></div>
+                    <div class="sec-item"><div class="sec-icon">✉</div><span>SMS & email confirmation sent instantly</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-copy">© 2026 Z Bank Financial Services. All rights reserved.</div>
+        <div class="footer-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Support</a></div>
+    </footer>
+
+    <script>
+        const userBalance = {{ user.balance }};
+        const rates = {US:{rate:1.00,currency:'USD',symbol:'$'},UK:{rate:0.79,currency:'GBP',symbol:'£'},EU:{rate:0.92,currency:'EUR',symbol:'€'},IN:{rate:83.12,currency:'INR',symbol:'₹'},SG:{rate:1.34,currency:'SGD',symbol:'S$'},AE:{rate:3.67,currency:'AED',symbol:'د.إ'},JP:{rate:149.50,currency:'JPY',symbol:'¥'},AU:{rate:1.53,currency:'AUD',symbol:'A$'}};
+        const fees = {instant:5,same:2,standard:0};
+        const arrivals = {instant:'In minutes',same:'Today',standard:'1–3 business days'};
+
+        function updateRate() {
+            const c = document.getElementById('destCountry').value;
+            document.getElementById('rateDisplay').textContent = rates[c].rate + ' ' + rates[c].currency;
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const c = document.getElementById('destCountry').value;
+            const t = document.getElementById('transferType').value;
+            const r = rates[c];
+            const fee = fees[t];
+            document.getElementById('sumAmount').textContent = '$' + amount.toFixed(2);
+            document.getElementById('sumFee').textContent = fee === 0 ? 'Free' : '$' + fee.toFixed(2);
+            document.getElementById('sumRate').textContent = '1 USD = ' + r.rate + ' ' + r.currency;
+            document.getElementById('sumRecipient').textContent = r.symbol + (amount * r.rate).toFixed(2);
+            document.getElementById('sumArrival').textContent = arrivals[t];
+            document.getElementById('sumTotal').textContent = '$' + (amount + fee).toFixed(2);
+        }
+
+        function setTab(btn) {
+            document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function selectBene(el, name, account) {
+            document.querySelectorAll('.bene-item').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('beneficiaryName').value = name;
+            document.getElementById('toAccount').value = account;
+        }
+
+        function doTransfer() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const beneficiary = document.getElementById('beneficiaryName').value.trim();
+            const toAccount = document.getElementById('toAccount').value.trim();
+
+            if (!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
+            if (!beneficiary) { alert('Please enter beneficiary name.'); return; }
+            if (!toAccount) { alert('Please enter account number.'); return; }
+            if (amount > userBalance) { alert('Insufficient balance! Your balance is $' + userBalance.toFixed(2)); return; }
+
+            document.getElementById('loading').style.display = 'flex';
+
+            fetch('/transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    from_account: document.getElementById('fromAccount').value,
+                    to_account: toAccount,
+                    beneficiary_name: beneficiary,
+                    swift_code: document.getElementById('swiftCode').value,
+                    amount: amount,
+                    destination_country: document.getElementById('destCountry').value,
+                    transfer_type: document.getElementById('transferType').value,
+                    remarks: document.getElementById('remarks').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('txnIdDisplay').textContent = data.transaction_id;
+                document.getElementById('successOverlay').style.display = 'flex';
+            })
+            .catch(() => {
+                document.getElementById('loading').style.display = 'none';
+                alert('Transfer failed. Please try again.');
+            });
+        }
+
+        updateSummary();
+
+        (function() {
+            var path = window.location.pathname;
+            document.querySelectorAll('.nav-center a').forEach(function(a) {
+                a.classList.remove('active');
+                var href = a.getAttribute('href');
+                if (!href || href.indexOf('#') > 0) return;
+                if (path === href) a.classList.add('active');
+                else if (href !== '/' && path.startsWith(href)) a.classList.add('active');
+            });
+        })();
+    </script>
+</body>
+</html>

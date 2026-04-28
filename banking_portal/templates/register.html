@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <title>Z Bank — Create Account</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color-scheme: light;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #0a0a0a;
+            position: relative;
+        }
+
+        /* Full page grid */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-circle1 {
+            position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0,0,0,0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -100px; right: -100px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-circle2 {
+            position: fixed;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(0,0,0,0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: -80px; left: -80px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            padding: 25px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #0a0a0a;
+            text-decoration: none;
+        }
+        .nav-btns { display: flex; gap: 12px; align-items: center; }
+        .nav-text { font-size: 14px; color: #999; }
+        .btn-filled {
+            padding: 10px 24px;
+            background: #0a0a0a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .btn-filled:hover { opacity: 0.85; }
+
+        /* Page */
+        .page {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 20px;
+            padding: 50px 45px;
+            width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-header { margin-bottom: 30px; }
+        .card-header h2 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0a0a0a;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        .card-header p { font-size: 14px; color: #999; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.03);
+            border: 1.5px solid rgba(0,0,0,0.08);
+            border-radius: 10px;
+            font-size: 14px;
+            color: #0a0a0a;
+            outline: none;
+            transition: all 0.3s;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .form-group input::placeholder { color: #bbb; }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #0a0a0a;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .divider-line { height: 1px; background: rgba(0,0,0,0.06); margin: 5px 0 18px; }
+
+        .terms {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 22px;
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+        }
+        .terms input[type="checkbox"] {
+            width: 15px; height: 15px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            accent-color: #0a0a0a;
+        }
+        .terms a { color: #0a0a0a; text-decoration: underline; }
+
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background: #0a0a0a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .btn-register:hover { opacity: 0.85; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            color: #ccc;
+            font-size: 12px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(0,0,0,0.07);
+        }
+
+        .login-link {
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+        }
+        .login-link a {
+            color: #0a0a0a;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .success-msg {
+            display: none;
+            background: #f0faf4;
+            border: 1px solid #a8dfc0;
+            color: #1a7a45;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .error-msg {
+            display: none;
+            background: #fff5f5;
+            border: 1px solid #ffc0c0;
+            color: #cc0000;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top-color: #0a0a0a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 15px;
+        }
+        .loading p { color: #666; font-size: 14px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Creating your account...</p>
+    </div>
+
+    <!-- Full page background -->
+    <div class="bg-grid"></div>
+    <div class="bg-circle1"></div>
+    <div class="bg-circle2"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Z BANK</a>
+        <div class="nav-btns">
+            <span class="nav-text">Already have an account?</span>
+            <a href="/login-page" class="btn-filled">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- Page -->
+    <div class="page">
+        <div class="glass-card">
+            <div class="card-header">
+                <h2>Create Account</h2>
+                <p>Join Z Bank — Smart banking starts here</p>
+            </div>
+
+            <div class="success-msg" id="successMsg">
+                ✅ Account created! Redirecting to login...
+            </div>
+            <div class="error-msg" id="errorMsg">
+                ⚠️ Please fill in all required fields correctly.
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="firstName" placeholder="John"/>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" placeholder="Anderson"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="john@email.com"/>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="phone" placeholder="+1 (555) 000-0000"/>
+            </div>
+
+            <div class="divider-line"></div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Choose a username" autocomplete="off"/>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Min 8 chars"/>
+                </div>
+                <div class="form-group">
+                    <label>Confirm</label>
+                    <input type="password" id="confirmPassword" placeholder="Repeat"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Account Type</label>
+                <select id="accountType">
+                    <option>Personal — Savings</option>
+                    <option>Personal — Current</option>
+                    <option>Business Account</option>
+                </select>
+            </div>
+
+            <div class="terms">
+                <input type="checkbox" id="terms"/>
+                <span>I agree to Z Bank's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+            </div>
+
+            <button class="btn-register" onclick="doRegister()">
+                Create My Account →
+            </button>
+
+            <div class="divider">or</div>
+
+            <div class="login-link">
+                Already have an account? <a href="/login-page">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function doRegister() {
+            var firstName = document.getElementById('firstName').value;
+            var lastName = document.getElementById('lastName').value;
+            var email = document.getElementById('email').value;
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            var terms = document.getElementById('terms').checked;
+
+            document.getElementById('errorMsg').style.display = 'none';
+
+            if (!firstName || !lastName || !email || !username || !password) {
+                document.getElementById('errorMsg').style.display = 'block';
+                return;
+            }
+            if (password !== confirmPassword) {
+                document.getElementById('errorMsg').textContent = '⚠️ Passwords do not match.';
+                document.getElementById('errorMsg').style.display = 'block';
+                return;
+            }
+            if (!terms) {
+                document.getElementById('errorMsg').textContent = '⚠️ Please accept the terms and conditions.';
+                document.getElementById('errorMsg').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'flex';
+
+            fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    phone: document.getElementById('phone').value,
+                    username: username,
+                    password: password,
+                    account_type: document.getElementById('accountType').value
+                })
+            })
+            .then(res => res.json())
+            .then(result => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('successMsg').style.display = 'block';
+                setTimeout(() => { window.location.href = '/login-page'; }, 2000);
+            });
+        }
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') doRegister();
+        });
+    </script>
+</body>
+</html>

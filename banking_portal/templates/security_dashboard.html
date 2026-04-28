@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z Bank — SOC Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #040203; --card: #0d0608; --card2: #110809;
+            --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.11);
+            --muted: rgba(255,255,255,0.35); --muted2: rgba(255,255,255,0.16);
+            --accent: #ef4444; --accent-dim: rgba(239,68,68,0.08);
+            --accent-border: rgba(239,68,68,0.18);
+            --green: #22c55e; --green-dim: rgba(34,197,94,0.08);
+            --red: #ef4444; --red-dim: rgba(239,68,68,0.08);
+            --orange: #f97316; --orange-dim: rgba(249,115,22,0.08);
+            --blue: #60a5fa; --blue-dim: rgba(96,165,250,0.08);
+            --yellow: #fbbf24;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:#e8eaf0; min-height:100vh; -webkit-font-smoothing:antialiased; }
+        ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:#1a0a0a;border-radius:4px;}
+
+        /* NAV */
+        .navbar {
+            position:sticky; top:0; z-index:100;
+            background:rgba(4,2,3,0.92); backdrop-filter:blur(20px);
+            border-bottom:1px solid var(--border);
+            padding:0 40px; height:56px;
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .nav-left { display:flex; align-items:center; gap:16px; }
+        .nav-logo { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; letter-spacing:4px; color:white; text-decoration:none; }
+        .nav-sep { width:1px; height:18px; background:var(--border2); }
+        .nav-badge {
+            font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700;
+            color:var(--accent); background:var(--accent-dim);
+            border:1px solid var(--accent-border);
+            padding:3px 10px; border-radius:4px; letter-spacing:1px;
+        }
+        .nav-right { display:flex; align-items:center; gap:10px; }
+        .live-indicator { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted); }
+        .live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:blink 2s infinite; box-shadow:0 0 6px var(--green); }
+        @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+        .refresh-time { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+        .nav-pill { padding:6px 14px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:100px; font-size:12px; color:var(--muted); text-decoration:none; transition:all 0.2s; }
+        .nav-pill:hover { color:white; border-color:var(--border2); }
+        .nav-pill.danger { color:rgba(239,68,68,0.7); border-color:rgba(239,68,68,0.15); }
+        .nav-pill.danger:hover { color:var(--red); }
+
+        /* PAGE */
+        .page { padding:32px 40px; max-width:1400px; margin:0 auto; }
+
+        /* HEADER */
+        .page-header { margin-bottom:28px; opacity:0; animation:fadeUp 0.5s ease 0.05s forwards; }
+        .page-tag { display:inline-flex; align-items:center; gap:7px; background:var(--accent-dim); border:1px solid var(--accent-border); padding:4px 12px; border-radius:100px; font-size:10px; font-weight:700; color:var(--accent); letter-spacing:1.3px; text-transform:uppercase; margin-bottom:12px; }
+        .page-header h1 { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:white; letter-spacing:-0.3px; margin-bottom:5px; }
+        .page-header p { font-size:13px; color:var(--muted); }
+
+        /* STATS */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px; }
+        .stat-card {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:16px; padding:22px;
+            opacity:0; animation:fadeUp 0.5s ease forwards;
+            transition:border-color 0.2s; position:relative; overflow:hidden;
+        }
+        .stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+        .stat-card.red::after { background:var(--red); }
+        .stat-card.orange::after { background:var(--orange); }
+        .stat-card.green::after { background:var(--green); }
+        .stat-card.blue::after { background:var(--blue); }
+        .stat-card:nth-child(1){animation-delay:0.1s}
+        .stat-card:nth-child(2){animation-delay:0.15s}
+        .stat-card:nth-child(3){animation-delay:0.2s}
+        .stat-card:nth-child(4){animation-delay:0.25s}
+        .stat-card:hover { border-color:var(--border2); }
+        .stat-label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1.3px; margin-bottom:10px; }
+        .stat-val { font-size:32px; font-weight:800; letter-spacing:-1px; margin-bottom:5px; font-family:'Syne',sans-serif; }
+        .stat-val.red { color:var(--red); }
+        .stat-val.orange { color:var(--orange); }
+        .stat-val.green { color:var(--green); }
+        .stat-val.blue { color:var(--blue); }
+        .stat-sub { font-size:11px; color:var(--muted2); }
+
+        /* TWO COL */
+        .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px; }
+
+        /* PANEL */
+        .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; opacity:0; animation:fadeUp 0.5s ease forwards; }
+        .panel.full { grid-column:span 2; }
+        .ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+        .ph-title { font-size:14px; font-weight:700; color:white; }
+        .ph-sub { font-size:11px; color:var(--muted); }
+        .ph-badge { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; color:var(--muted); background:rgba(255,255,255,0.05); border:1px solid var(--border); padding:2px 8px; border-radius:4px; }
+
+        /* ATTACK TABLE */
+        .atk-table { width:100%; border-collapse:collapse; }
+        .atk-table th { text-align:left; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.2px; padding:6px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
+        .atk-table td { padding:10px; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.025); vertical-align:middle; }
+        .atk-table tr:last-child td { border-bottom:none; }
+        .atk-table tr:hover td { background:rgba(255,255,255,0.015); }
+        .atk-type { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); font-weight:600; }
+        .atk-ip { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+        .atk-time { font-size:11px; color:var(--muted2); white-space:nowrap; }
+        .atk-user { font-size:12px; color:#e0e0e0; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .atk-endpoint { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted2); max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+        /* SEVERITY PILL */
+        .sev { font-size:10px; font-weight:700; padding:3px 9px; border-radius:4px; display:inline-block; white-space:nowrap; }
+        .sev-HIGH { background:var(--red-dim); color:var(--red); border:1px solid rgba(239,68,68,0.15); }
+        .sev-MEDIUM { background:var(--orange-dim); color:var(--orange); border:1px solid rgba(249,115,22,0.15); }
+        .sev-LOW { background:var(--green-dim); color:var(--green); border:1px solid rgba(34,197,94,0.15); }
+
+        /* TOP IPs */
+        .ip-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .ip-row:last-child { border-bottom:none; }
+        .ip-rank { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:var(--muted); width:20px; flex-shrink:0; }
+        .ip-addr { font-family:'JetBrains Mono',monospace; font-size:12px; color:white; flex:1; }
+        .ip-bar-wrap { width:100px; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
+        .ip-bar { height:100%; border-radius:2px; background:var(--accent); transition:width 1s ease; }
+        .ip-count { font-size:12px; font-weight:700; color:var(--accent); min-width:30px; text-align:right; }
+
+        /* SEVERITY BARS */
+        .sev-bar-row { margin-bottom:16px; }
+        .sev-bar-row:last-child { margin-bottom:0; }
+        .sev-bar-head { display:flex; justify-content:space-between; font-size:12px; font-weight:600; margin-bottom:7px; }
+        .sev-bar-track { height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden; }
+        .sev-bar-fill { height:100%; border-radius:3px; transition:width 1.2s ease; }
+
+        /* ATTACK TYPES */
+        .type-row { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .type-row:last-child { border-bottom:none; }
+        .type-name { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); flex:1; }
+        .type-bar-wrap { width:120px; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
+        .type-bar-fill { height:100%; border-radius:2px; background:var(--blue); }
+        .type-count { font-size:12px; font-weight:700; color:white; min-width:28px; text-align:right; }
+
+        /* SESSIONS */
+        .sess-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .sess-row:last-child { border-bottom:none; }
+        .sess-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; background:var(--green); box-shadow:0 0 5px var(--green); }
+        .sess-user { font-size:13px; font-weight:600; color:white; flex:1; }
+        .sess-ip { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+        .sess-time { font-size:11px; color:var(--muted2); text-align:right; white-space:nowrap; }
+
+        /* EMPTY STATE */
+        .empty { text-align:center; padding:40px; color:var(--muted); font-size:13px; }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+
+        .footer { border-top:1px solid var(--border); padding:20px 40px; display:flex; justify-content:space-between; margin-top:50px; }
+        .footer-copy { font-size:11px; color:var(--muted2); font-family:'JetBrains Mono',monospace; }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+    <div class="nav-left">
+        <a href="/security/dashboard" class="nav-logo">Z BANK</a>
+        <div class="nav-sep"></div>
+        <span class="nav-badge">SOC PANEL</span>
+    </div>
+    <div class="nav-right">
+        <div class="live-indicator">
+            <div class="live-dot"></div>
+            Live
+        </div>
+        <span class="refresh-time" id="lastRefresh">Refreshing every 10s</span>
+        <a href="/admin/dashboard" class="nav-pill">Admin Panel</a>
+        <a href="/api/docs" class="nav-pill">API Docs</a>
+        <a href="/dashboard" class="nav-pill">Bank Portal</a>
+        <a href="/security" class="nav-pill danger">Logout</a>
+    </div>
+</nav>
+
+<div class="page">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="page-tag">🔴 Threat Intelligence</div>
+        <h1>Security Operations Center</h1>
+        <p>Real-time attack monitoring — Honeypot Network PRJN26-213</p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-grid">
+        <div class="stat-card red">
+            <div class="stat-label">Total Attacks</div>
+            <div class="stat-val red" id="stat-total">{{ total }}</div>
+            <div class="stat-sub">All captured events</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-label">HIGH Severity</div>
+            <div class="stat-val orange" id="stat-high">{{ high }}</div>
+            <div class="stat-sub">Critical threat events</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-label">IDOR Attacks</div>
+            <div class="stat-val blue" id="stat-idor">{{ idor_hits }}</div>
+            <div class="stat-sub">Unauthorized data access</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Bait Creds Used</div>
+            <div class="stat-val green" id="stat-bait">{{ bait_hits }}</div>
+            <div class="stat-sub">Successful honeypot logins</div>
+        </div>
+    </div>
+
+    <!-- Live Attack Feed -->
+    <div class="panel" style="margin-bottom:18px;animation-delay:0.3s;">
+        <div class="ph">
+            <div class="ph-title">Live Attack Feed</div>
+            <span class="ph-badge" id="attack-count">{{ attacks|length }} events</span>
+        </div>
+        {% if attacks %}
+        <div style="overflow-x:auto;">
+            <table class="atk-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Attack Type</th>
+                        <th>Severity</th>
+                        <th>IP Address</th>
+                        <th>Username</th>
+                        <th>Endpoint</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="attack-feed">
+                    {% for atk in attacks %}
+                    <tr>
+                        <td class="atk-time">{{ atk.timestamp[:16] if atk.timestamp else '—' }}</td>
+                        <td><span class="atk-type">{{ atk.attack_type }}</span></td>
+                        <td><span class="sev sev-{{ atk.severity }}">{{ atk.severity }}</span></td>
+                        <td class="atk-ip">{{ atk.ip_address or '—' }}</td>
+                        <td class="atk-user">{{ atk.username_tried or '—' }}</td>
+                        <td class="atk-endpoint">{{ atk.endpoint or '—' }}</td>
+                        <td style="font-size:11px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            {{ atk.details or '—' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">
+            No attacks captured yet — perform the demo attack chain to populate this feed
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Two col: Top IPs + Severity Breakdown -->
+    <div class="two-col">
+
+        <!-- Top Attacker IPs -->
+        <div class="panel" style="animation-delay:0.35s;">
+            <div class="ph">
+                <div class="ph-title">Top Attacker IPs</div>
+                <span class="ph-sub">By hit count</span>
+            </div>
+            {% if top_ips %}
+                {% set max_count = top_ips[0].count if top_ips else 1 %}
+                {% for ip in top_ips %}
+                <div class="ip-row">
+                    <span class="ip-rank">#{{ loop.index }}</span>
+                    <span class="ip-addr">{{ ip.ip_address or 'Unknown' }}</span>
+                    <div class="ip-bar-wrap">
+                        <div class="ip-bar" style="width:{{ [(ip.count / max_count * 100)|int, 100]|min }}%"></div>
+                    </div>
+                    <span class="ip-count">{{ ip.count }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">No IP data yet</div>
+            {% endif %}
+        </div>
+
+        <!-- Severity Breakdown -->
+        <div class="panel" style="animation-delay:0.4s;">
+            <div class="ph">
+                <div class="ph-title">Severity Breakdown</div>
+                <span class="ph-sub">{{ total }} total</span>
+            </div>
+            {% set total_safe = total if total > 0 else 1 %}
+
+            <div class="sev-bar-row">
+                <div class="sev-bar-head">
+                    <span style="color:var(--red);font-weight:700;">HIGH</span>
+                    <span style="color:var(--red);">{{ high }} events ({{ [(high / total_safe * 100)|int, 100]|min }}%)</span>
+                </div>
+                <div class="sev-bar-track">
+                    <div class="sev-bar-fill" style="width:{{ [(high / total_safe * 100)|int, 100]|min }}%;background:var(--red);"></div>
+                </div>
+            </div>
+
+            <div class="sev-bar-row">
+                <div class="sev-bar-head">
+                    <span style="color:var(--orange);font-weight:700;">MEDIUM</span>
+                    <span style="color:var(--orange);">{{ medium }} events ({{ [(medium / total_safe * 100)|int, 100]|min }}%)</span>
+                </div>
+                <div class="sev-bar-track">
+                    <div class="sev-bar-fill" style="width:{{ [(medium / total_safe * 100)|int, 100]|min }}%;background:var(--orange);"></div>
+                </div>
+            </div>
+
+            <div class="sev-bar-row">
+                <div class="sev-bar-head">
+                    <span style="color:var(--green);font-weight:700;">LOW</span>
+                    <span style="color:var(--green);">{{ low }} events ({{ [(low / total_safe * 100)|int, 100]|min }}%)</span>
+                </div>
+                <div class="sev-bar-track">
+                    <div class="sev-bar-fill" style="width:{{ [(low / total_safe * 100)|int, 100]|min }}%;background:var(--green);"></div>
+                </div>
+            </div>
+
+            <div style="height:20px;"></div>
+
+            <!-- Attack category breakdown -->
+            <div class="ph" style="margin-bottom:14px;">
+                <div class="ph-title" style="font-size:13px;">By Category</div>
+            </div>
+            <div class="type-row">
+                <span class="type-name">IDOR_*</span>
+                <div class="type-bar-wrap">
+                    <div class="type-bar-fill" style="width:{{ [(idor_hits / total_safe * 100)|int, 100]|min }}%;"></div>
+                </div>
+                <span class="type-count">{{ idor_hits }}</span>
+            </div>
+            <div class="type-row">
+                <span class="type-name">API_*</span>
+                <div class="type-bar-wrap">
+                    <div class="type-bar-fill" style="width:{{ [(api_hits / total_safe * 100)|int, 100]|min }}%;background:var(--orange);"></div>
+                </div>
+                <span class="type-count">{{ api_hits }}</span>
+            </div>
+            <div class="type-row">
+                <span class="type-name">LOGIN_*</span>
+                <div class="type-bar-wrap">
+                    {% set login_hits = total - idor_hits - api_hits - bait_hits %}
+                    <div class="type-bar-fill" style="width:{{ [(login_hits / total_safe * 100)|int, 100]|min }}%;background:var(--yellow);"></div>
+                </div>
+                <span class="type-count">{{ [login_hits, 0]|max }}</span>
+            </div>
+            <div class="type-row">
+                <span class="type-name">BAIT_CREDENTIAL</span>
+                <div class="type-bar-wrap">
+                    <div class="type-bar-fill" style="width:{{ [(bait_hits / total_safe * 100)|int, 100]|min }}%;background:var(--red);"></div>
+                </div>
+                <span class="type-count">{{ bait_hits }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sessions -->
+    <div class="panel" style="animation-delay:0.45s;">
+        <div class="ph">
+            <div class="ph-title">Login Sessions</div>
+            <span class="ph-sub">{{ sessions|length }} total sessions recorded</span>
+        </div>
+        {% if sessions %}
+        <table class="atk-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Username</th>
+                    <th>IP Address</th>
+                    <th>Login Time</th>
+                    <th>Last Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sess in sessions %}
+                <tr>
+                    <td>
+                        <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--green);">
+                            <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 4px var(--green);"></span>
+                            Active
+                        </span>
+                    </td>
+                    <td style="font-size:13px;font-weight:600;color:white;">{{ sess.username or '—' }}</td>
+                    <td class="atk-ip">{{ sess.ip_address or '—' }}</td>
+                    <td class="atk-time">{{ sess.login_time[:16] if sess.login_time else '—' }}</td>
+                    <td class="atk-time">{{ sess.last_active[:16] if sess.last_active else '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty">No sessions recorded yet</div>
+        {% endif %}
+    </div>
+
+</div>
+
+<footer class="footer">
+    <div class="footer-copy">Z BANK SOC · PRJN26-213 · Read-only analyst access</div>
+    <div class="footer-copy" id="footer-time">© 2026 Z Bank Financial Services</div>
+</footer>
+
+<script>
+    // Auto-refresh stats every 10 seconds
+    function refreshStats() {
+        fetch('/security/api/stats')
+        .then(r => r.json())
+        .then(data => {
+            if (data.total !== undefined) {
+                document.getElementById('stat-total').textContent = data.total;
+                document.getElementById('stat-high').textContent = data.high;
+                document.getElementById('stat-idor').textContent = data.idor;
+            }
+            const now = new Date();
+            document.getElementById('lastRefresh').textContent =
+                'Last refresh: ' + now.toLocaleTimeString();
+        })
+        .catch(() => {});
+    }
+
+    setInterval(refreshStats, 10000);
+
+    // Update footer time
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('footer-time').textContent =
+            now.toLocaleString();
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
+</body>
+</html>
