@@ -3,161 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Z Bank — Admin Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Z Bank — Admin Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #020408; --card: #070d14; --card2: #0b1220;
-            --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.11);
-            --muted: rgba(255,255,255,0.35); --muted2: rgba(255,255,255,0.16);
-            --accent: #60a5fa; --accent-dim: rgba(96,165,250,0.08);
-            --accent-border: rgba(96,165,250,0.18);
-            --green: #22c55e; --green-dim: rgba(34,197,94,0.08);
-            --red: #ef4444; --red-dim: rgba(239,68,68,0.08);
-            --orange: #f97316; --orange-dim: rgba(249,115,22,0.08);
-            --yellow: #fbbf24;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:var(--bg); color:#e8eaf0; min-height:100vh; -webkit-font-smoothing:antialiased; }
-        ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:#1a2030;border-radius:4px;}
-
-        /* NAV */
-        .navbar { position:sticky; top:0; z-index:100; background:rgba(2,4,8,0.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 40px; height:56px; display:flex; align-items:center; justify-content:space-between; }
-        .nav-left { display:flex; align-items:center; gap:16px; }
-        .nav-logo { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; letter-spacing:4px; color:white; text-decoration:none; }
-        .nav-sep { width:1px; height:18px; background:var(--border2); }
-        .nav-badge { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); background:var(--accent-dim); border:1px solid var(--accent-border); padding:3px 10px; border-radius:4px; letter-spacing:1px; }
-        .nav-right { display:flex; align-items:center; gap:10px; }
-        .nav-pill { padding:6px 14px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:100px; font-size:12px; color:var(--muted); text-decoration:none; transition:all 0.2s; }
-        .nav-pill:hover { color:white; border-color:var(--border2); }
-        .nav-pill.danger { color:rgba(239,68,68,0.7); border-color:rgba(239,68,68,0.15); }
-        .nav-pill.danger:hover { color:var(--red); border-color:rgba(239,68,68,0.3); }
-
-        /* PAGE */
-        .page { padding:36px 40px; max-width:1300px; margin:0 auto; }
-
-        /* PAGE HEADER */
-        .page-header { margin-bottom:32px; opacity:0; animation:fadeUp 0.5s ease 0.05s forwards; }
-        .page-tag { display:inline-flex; align-items:center; gap:7px; background:var(--accent-dim); border:1px solid var(--accent-border); padding:4px 12px; border-radius:100px; font-size:10px; font-weight:700; color:var(--accent); letter-spacing:1.3px; text-transform:uppercase; margin-bottom:12px; }
-        .page-header h1 { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:white; letter-spacing:-0.3px; margin-bottom:5px; }
-        .page-header p { font-size:13px; color:var(--muted); }
-
-        /* TOAST */
-        .toast { position:fixed; bottom:28px; right:28px; z-index:999; background:var(--card2); border:1px solid var(--border2); border-radius:12px; padding:14px 18px; font-size:13px; color:white; display:none; max-width:320px; box-shadow:0 20px 50px rgba(0,0,0,0.5); animation:slideIn 0.3s ease; }
-        .toast.success { border-color:rgba(34,197,94,0.25); color:var(--green); }
-        .toast.error { border-color:rgba(239,68,68,0.25); color:var(--red); }
-        @keyframes slideIn { from{transform:translateY(20px);opacity:0;} to{transform:translateY(0);opacity:1;} }
-
-        /* CONFIRM MODAL */
-        .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:200; align-items:center; justify-content:center; }
-        .modal-box { background:var(--card); border:1px solid var(--border2); border-radius:16px; padding:32px; width:360px; text-align:center; }
-        .modal-icon { font-size:32px; margin-bottom:14px; }
-        .modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:white; margin-bottom:8px; }
-        .modal-sub { font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.6; }
-        .modal-btns { display:flex; gap:10px; justify-content:center; }
-        .btn-cancel { padding:10px 24px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; }
-        .btn-cancel:hover { color:white; }
-        .btn-confirm { padding:10px 24px; background:var(--red); border:none; border-radius:8px; font-size:13px; font-weight:700; color:white; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; }
-        .btn-confirm:hover { background:#dc2626; }
-
-        /* STATS GRID */
-        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
-        .stat-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; opacity:0; animation:fadeUp 0.5s ease forwards; transition:border-color 0.2s; }
-        .stat-card:hover { border-color:var(--border2); }
-        .stat-card:nth-child(1){animation-delay:0.1s}
-        .stat-card:nth-child(2){animation-delay:0.15s}
-        .stat-card:nth-child(3){animation-delay:0.2s}
-        .stat-card:nth-child(4){animation-delay:0.25s}
-        .stat-label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1.3px; margin-bottom:10px; }
-        .stat-val { font-size:26px; font-weight:700; letter-spacing:-0.5px; margin-bottom:4px; }
-        .stat-val.blue { color:var(--accent); }
-        .stat-val.red { color:var(--red); }
-        .stat-val.green { color:var(--green); }
-        .stat-val.white { color:white; }
-        .stat-sub { font-size:11px; color:var(--muted2); }
-
-        /* TWO COL */
-        .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
-        .three-col { display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:16px; margin-bottom:20px; }
-
-        /* PANEL */
-        .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; opacity:0; animation:fadeUp 0.5s ease forwards; }
-        .panel:nth-child(1){animation-delay:0.3s}
-        .panel:nth-child(2){animation-delay:0.36s}
-        .panel:nth-child(3){animation-delay:0.42s}
-        .ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .ph-title { font-size:14px; font-weight:700; color:white; }
-        .ph-sub { font-size:11px; color:var(--muted); }
-
-        /* USER TABLE */
-        .user-row { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-        .user-row:last-child { border-bottom:none; }
-        .user-avatar { width:38px; height:38px; background:rgba(96,165,250,0.08); border:1px solid var(--accent-border); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--accent); flex-shrink:0; }
-        .user-info { flex:1; }
-        .user-name { font-size:13px; font-weight:600; color:white; margin-bottom:3px; }
-        .user-meta { font-size:11px; color:var(--muted); }
-        .user-balance { text-align:right; }
-        .balance-val { font-size:15px; font-weight:700; color:var(--green); margin-bottom:3px; }
-        .balance-type { font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
-        .btn-reset { padding:6px 14px; background:rgba(96,165,250,0.08); border:1px solid var(--accent-border); border-radius:7px; font-size:11px; font-weight:600; color:var(--accent); cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
-        .btn-reset:hover { background:rgba(96,165,250,0.15); }
-
-        /* ACTION CARDS */
-        .action-card { background:var(--card2); border:1px solid var(--border); border-radius:12px; padding:18px; transition:all 0.2s; }
-        .action-card:hover { border-color:var(--border2); transform:translateY(-2px); }
-        .action-icon { font-size:22px; margin-bottom:10px; }
-        .action-title { font-size:13px; font-weight:700; color:white; margin-bottom:4px; }
-        .action-desc { font-size:11px; color:var(--muted); line-height:1.5; margin-bottom:14px; }
-        .btn-action { width:100%; padding:9px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; }
-        .btn-action:hover { transform:translateY(-1px); }
-        .btn-action.blue { background:var(--accent); color:#020408; }
-        .btn-action.blue:hover { background:#93c5fd; }
-        .btn-action.green { background:var(--green); color:#020408; }
-        .btn-action.green:hover { background:#4ade80; }
-        .btn-action.orange { background:var(--orange); color:#020408; }
-        .btn-action.orange:hover { background:#fb923c; }
-        .btn-action.red { background:var(--red); color:white; }
-        .btn-action.red:hover { background:#dc2626; }
-
-        /* ACTIVITY TABLE */
-        .atk-table { width:100%; border-collapse:collapse; }
-        .atk-table th { text-align:left; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.2px; padding:6px 10px; border-bottom:1px solid var(--border); }
-        .atk-table td { padding:10px; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.025); }
-        .atk-table tr:last-child td { border-bottom:none; }
-        .sev-pill { font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; display:inline-block; }
-        .sev-HIGH { background:var(--red-dim); color:var(--red); }
-        .sev-MEDIUM { background:var(--orange-dim); color:var(--orange); }
-        .sev-LOW { background:var(--green-dim); color:var(--green); }
-        .atk-type { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); }
-        .atk-ip { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
-        .atk-time { font-size:11px; color:var(--muted2); white-space:nowrap; }
-
-        /* SESSIONS */
-        .sess-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
-        .sess-row:last-child { border-bottom:none; }
-        .sess-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-        .sess-dot.active { background:var(--green); box-shadow:0 0 5px var(--green); }
-        .sess-info { flex:1; }
-        .sess-user { font-size:12px; font-weight:600; color:white; }
-        .sess-ip { font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; }
-        .sess-time { font-size:11px; color:var(--muted2); text-align:right; }
-
-        @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
-
-        .footer { border-top:1px solid var(--border); padding:20px 40px; display:flex; justify-content:space-between; margin-top:50px; }
-        .footer-copy { font-size:11px; color:var(--muted2); font-family:'JetBrains Mono',monospace; }
+        :root{--bg:#050505;--card:#0f0f0f;--card2:#141414;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--accent:#c8f135;--accent-dim:rgba(200,241,53,0.08);--accent-border:rgba(200,241,53,0.2);--muted:rgba(255,255,255,0.38);--muted2:rgba(255,255,255,0.18);--green:#22c55e;--green-dim:rgba(34,197,94,0.08);--red:#ef4444;--red-dim:rgba(239,68,68,0.08);--orange:#f97316;--orange-dim:rgba(249,115,22,0.08);--blue:#60a5fa;--blue-dim:rgba(96,165,250,0.08);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:#e8eaf0;min-height:100vh;-webkit-font-smoothing:antialiased;}
+        ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#1a1a1a;border-radius:4px;}
+        .layout{display:flex;min-height:100vh;}
+        .sidebar{width:240px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+        .sb-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
+        .sb-logo-text{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:4px;color:white;}
+        .sb-logo-sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:1px;}
+        .sb-badge{display:inline-block;margin-top:8px;background:rgba(200,241,53,0.1);border:1px solid var(--accent-border);color:var(--accent);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:1px;font-family:'JetBrains Mono',monospace;}
+        .sb-section{padding:20px 14px 8px;font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;}
+        .sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.15s;text-decoration:none;border-left:2px solid transparent;}
+        .sb-item:hover{color:white;background:rgba(255,255,255,0.04);}
+        .sb-item.active{color:white;background:var(--accent-dim);border-left-color:var(--accent);}
+        .sb-icon{font-size:15px;width:20px;text-align:center;}
+        .sb-count{margin-left:auto;font-size:10px;font-weight:700;color:var(--accent);background:var(--accent-dim);padding:2px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace;}
+        .sb-divider{height:1px;background:var(--border);margin:12px 20px;}
+        .sb-footer{padding:16px 20px;margin-top:auto;border-top:1px solid var(--border);}
+        .sb-admin{display:flex;align-items:center;gap:10px;}
+        .sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);}
+        .sb-admin-name{font-size:13px;font-weight:600;color:white;}
+        .sb-admin-role{font-size:11px;color:var(--muted);}
+        .sb-logout{font-size:12px;color:var(--muted);text-decoration:none;padding:4px 8px;border-radius:6px;transition:all 0.15s;margin-left:auto;}
+        .sb-logout:hover{color:var(--red);}
+        .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+        .topbar{position:sticky;top:0;z-index:50;background:rgba(5,5,5,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+        .topbar-title{font-size:15px;font-weight:600;color:white;}
+        .topbar-right{display:flex;align-items:center;gap:12px;}
+        .mode-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:'JetBrains Mono',monospace;}
+        .mode-badge.vuln{background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);color:var(--red);}
+        .mode-badge.secure{background:var(--green-dim);border:1px solid rgba(34,197,94,0.2);color:var(--green);}
+        .mode-dot{width:6px;height:6px;border-radius:50%;animation:blink 2s infinite;}
+        .mode-badge.vuln .mode-dot{background:var(--red);}
+        .mode-badge.secure .mode-dot{background:var(--green);}
+        @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+        .tb-btn{padding:7px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:100px;font-size:12px;color:var(--muted);text-decoration:none;transition:all 0.2s;cursor:pointer;font-family:'Inter',sans-serif;}
+        .tb-btn:hover{color:white;border-color:var(--border2);}
+        .tb-btn.danger{color:rgba(239,68,68,0.7);}
+        .tb-btn.danger:hover{color:var(--red);}
+        .page{padding:28px 32px;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;opacity:0;animation:fadeUp 0.5s ease forwards;transition:border-color 0.2s;position:relative;overflow:hidden;}
+        .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+        .stat-card.c1::before{background:var(--accent);}
+        .stat-card.c2::before{background:var(--blue);}
+        .stat-card.c3::before{background:var(--red);}
+        .stat-card.c4::before{background:var(--green);}
+        .stat-card:nth-child(1){animation-delay:0.05s;}.stat-card:nth-child(2){animation-delay:0.1s;}.stat-card:nth-child(3){animation-delay:0.15s;}.stat-card:nth-child(4){animation-delay:0.2s;}
+        .stat-card:hover{border-color:var(--border2);}
+        .stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
+        .stat-val{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;font-family:'Syne',sans-serif;}
+        .stat-sub{font-size:11px;color:var(--muted2);}
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+        .four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+        .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;opacity:0;animation:fadeUp 0.5s ease forwards;transition:border-color 0.2s;}
+        .panel:hover{border-color:var(--border2);}
+        .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+        .ph-title{font-size:14px;font-weight:700;color:white;}
+        .ph-sub{font-size:11px;color:var(--muted);}
+        .user-table{width:100%;border-collapse:collapse;}
+        .user-table th{text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;padding:6px 12px;border-bottom:1px solid var(--border);}
+        .user-table td{padding:12px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);}
+        .user-table tr:last-child td{border-bottom:none;}
+        .user-table tr:hover td{background:rgba(255,255,255,0.015);}
+        .user-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+        .ua-g{background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);}
+        .ua-b{background:var(--blue-dim);border:1px solid rgba(96,165,250,0.2);color:var(--blue);}
+        .ua-o{background:var(--orange-dim);border:1px solid rgba(249,115,22,0.2);color:var(--orange);}
+        .user-name-cell{display:flex;align-items:center;gap:10px;}
+        .user-name{font-weight:600;color:white;font-size:13px;}
+        .user-meta{font-size:11px;color:var(--muted);margin-top:1px;font-family:'JetBrains Mono',monospace;}
+        .balance-val{font-size:14px;font-weight:700;color:var(--green);}
+        .acc-type-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;}
+        .atb-savings{background:var(--accent-dim);color:var(--accent);}
+        .atb-current{background:var(--blue-dim);color:var(--blue);}
+        .action-btn{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;border:none;font-family:'Inter',sans-serif;}
+        .btn-reset{background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);color:var(--blue);}
+        .btn-reset:hover{background:rgba(96,165,250,0.2);}
+        .btn-view{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);}
+        .btn-view:hover{color:white;}
+        .btn-suspend{background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);color:var(--red);}
+        .btn-suspend:hover{background:rgba(239,68,68,0.15);}
+        .action-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;transition:all 0.2s;}
+        .action-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+        .ac-icon{font-size:22px;margin-bottom:10px;}
+        .ac-title{font-size:13px;font-weight:700;color:white;margin-bottom:4px;}
+        .ac-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:14px;}
+        .ac-btn{width:100%;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all 0.15s;}
+        .ac-btn:hover{transform:translateY(-1px);}
+        .ac-green{background:var(--accent);color:#050505;}
+        .ac-green:hover{background:#d4f557;}
+        .ac-blue{background:var(--blue);color:#050505;}
+        .ac-red{background:var(--red);color:white;}
+        .ac-orange{background:var(--orange);color:#050505;}
+        .log-table{width:100%;border-collapse:collapse;}
+        .log-table th{text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;padding:6px 10px;border-bottom:1px solid var(--border);}
+        .log-table td{padding:10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.025);}
+        .log-table tr:last-child td{border-bottom:none;}
+        .log-table tr:hover td{background:rgba(255,255,255,0.015);}
+        .atk-type{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);}
+        .atk-ip{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+        .atk-time{font-size:11px;color:var(--muted2);white-space:nowrap;}
+        .sev{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;}
+        .sev-CRITICAL{background:rgba(127,29,29,0.3);color:#fca5a5;}
+        .sev-HIGH{background:var(--red-dim);color:var(--red);}
+        .sev-MEDIUM{background:var(--orange-dim);color:var(--orange);}
+        .sev-LOW{background:var(--green-dim);color:var(--green);}
+        .sess-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+        .sess-row:last-child{border-bottom:none;}
+        .sess-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);flex-shrink:0;}
+        .sev-bar-row{margin-bottom:14px;}
+        .sev-bar-row:last-child{margin-bottom:0;}
+        .sev-bar-head{display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px;}
+        .sev-bar-track{height:5px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;}
+        .sev-bar-fill{height:100%;border-radius:3px;transition:width 1.2s ease;}
+        .toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;font-size:13px;color:white;display:none;max-width:300px;box-shadow:0 20px 50px rgba(0,0,0,0.5);}
+        .toast.success{border-color:rgba(34,197,94,0.25);color:var(--green);}
+        .toast.error{border-color:rgba(239,68,68,0.25);color:var(--red);}
+        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center;}
+        .modal-box{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:32px;width:380px;}
+        .modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:white;margin-bottom:8px;}
+        .modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+        .modal-btns{display:flex;gap:10px;justify-content:flex-end;}
+        .btn-cancel{padding:9px 20px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;}
+        .btn-cancel:hover{color:white;}
+        .btn-confirm{padding:9px 20px;background:var(--red);border:none;border-radius:8px;font-size:13px;font-weight:700;color:white;cursor:pointer;font-family:'Inter',sans-serif;}
+        .btn-confirm:hover{background:#dc2626;}
+        .tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:10px;padding:4px;margin-bottom:20px;}
+        .tab{padding:7px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--muted);}
+        .tab.active{background:white;color:#050505;}
+        .search-bar{display:flex;gap:10px;margin-bottom:16px;}
+        .search-input{flex:1;padding:9px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;font-size:13px;color:white;outline:none;font-family:'Inter',sans-serif;transition:border-color 0.2s;}
+        .search-input::placeholder{color:var(--muted2);}
+        .search-input:focus{border-color:var(--accent-border);}
+        .section-page{display:none;}
+        .section-page.active{display:block;}
+        .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+        .tag-green{background:var(--green-dim);color:var(--green);}
+        .tag-red{background:var(--red-dim);color:var(--red);}
+        .tag-blue{background:var(--blue-dim);color:var(--blue);}
+        .tag-accent{background:var(--accent-dim);color:var(--accent);}
+        .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
     </style>
 </head>
 <body>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
-
-<!-- CONFIRM MODAL -->
 <div class="modal-bg" id="modalBg">
     <div class="modal-box">
-        <div class="modal-icon" id="modalIcon">⚠️</div>
-        <div class="modal-title" id="modalTitle">Are you sure?</div>
+        <div class="modal-title" id="modalTitle">Confirm Action</div>
         <div class="modal-sub" id="modalSub">This action cannot be undone.</div>
         <div class="modal-btns">
             <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -166,299 +165,467 @@
     </div>
 </div>
 
-<!-- NAV -->
-<nav class="navbar">
-    <div class="nav-left">
-        <a href="/admin/dashboard" class="nav-logo">Z BANK</a>
-        <div class="nav-sep"></div>
-        <span class="nav-badge">ADMIN PANEL</span>
-    </div>
-    <div class="nav-right">
-        <a href="/security/dashboard" class="nav-pill">SOC Panel</a>
-        <a href="/api/docs" class="nav-pill">API Docs</a>
-        <a href="/dashboard" class="nav-pill">Bank Portal</a>
-        <a href="/admin/logout" class="nav-pill danger">Logout</a>
-    </div>
-</nav>
-
-<div class="page">
-
-    <!-- Header -->
-    <div class="page-header">
-        <div class="page-tag">⚙️ System Administration</div>
-        <h1>Admin Control Panel</h1>
-        <p>Manage honeypot users, attack logs, and system settings — PRJN26-213</p>
-    </div>
-
-    <!-- Stats Row -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Bait Users</div>
-            <div class="stat-val white" id="stat-users">{{ total_users }}</div>
-            <div class="stat-sub">Active honeypot accounts</div>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-text">Z BANK</div>
+            <div class="sb-logo-sub">ADMINISTRATION</div>
+            <div class="sb-badge">ADMIN</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Total Transactions</div>
-            <div class="stat-val blue" id="stat-txns">{{ total_txns }}</div>
-            <div class="stat-sub">Across all accounts</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Attack Events</div>
-            <div class="stat-val red" id="stat-attacks">{{ total_attacks }}</div>
-            <div class="stat-sub">{{ high_attacks }} HIGH severity</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Bait Creds Used</div>
-            <div class="stat-val green">{{ bait_hits }}</div>
-            <div class="stat-sub">Successful bait logins</div>
-        </div>
-    </div>
-
-    <!-- Bait User Management + Actions -->
-    <div class="two-col">
-
-        <!-- Users -->
-        <div class="panel">
-            <div class="ph">
-                <div class="ph-title">Bait User Management</div>
-                <button class="btn-reset" onclick="confirmAction('Reset ALL balances to original values?', resetAllBalances, '💰', 'Reset All Balances')">
-                    Reset All
-                </button>
-            </div>
-            {% for user in users %}
-            <div class="user-row">
-                <div class="user-avatar">{{ user.full_name[0] }}</div>
-                <div class="user-info">
-                    <div class="user-name">{{ user.full_name }}</div>
-                    <div class="user-meta">{{ user.username }} · {{ user.account_number }}</div>
+        <div class="sb-section">Overview</div>
+        <a class="sb-item active" onclick="showSection('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</a>
+        <a class="sb-item" onclick="showSection('analytics',this)"><span class="sb-icon">📈</span> Analytics</a>
+        <div class="sb-section">Management</div>
+        <a class="sb-item" onclick="showSection('users',this)"><span class="sb-icon">👥</span> Users <span class="sb-count">{{ total_users }}</span></a>
+        <a class="sb-item" onclick="showSection('sessions',this)"><span class="sb-icon">🔑</span> Sessions <span class="sb-count">{{ active_sessions|length }}</span></a>
+        <a class="sb-item" onclick="showSection('transactions',this)"><span class="sb-icon">💳</span> Transactions <span class="sb-count" id="sb-txn-count">{{ total_txns }}</span></a>
+        <div class="sb-section">Security</div>
+        <a class="sb-item" onclick="showSection('attacks',this)"><span class="sb-icon">🔴</span> Attack Logs <span class="sb-count" id="sb-atk-count">{{ total_attacks }}</span></a>
+        <a class="sb-item" onclick="showSection('tools',this)"><span class="sb-icon">⚙️</span> System Tools</a>
+        <div class="sb-divider"></div>
+        <a class="sb-item" href="/security/dashboard"><span class="sb-icon">🛡️</span> SOC Panel</a>
+        <a class="sb-item" href="/api/docs"><span class="sb-icon">📖</span> API Docs</a>
+        <a class="sb-item" href="/dashboard"><span class="sb-icon">🏦</span> Bank Portal</a>
+        <div class="sb-footer">
+            <div class="sb-admin">
+                <div class="sb-avatar">A</div>
+                <div>
+                    <div class="sb-admin-name">Admin</div>
+                    <div class="sb-admin-role">System Administrator</div>
                 </div>
-                <div class="user-balance">
-                    <div class="balance-val" id="bal-{{ user.id }}">${{ "%.2f"|format(user.balance) }}</div>
-                    <div class="balance-type">{{ user.account_type }}</div>
-                </div>
-                <button class="btn-reset" onclick="resetBalance('{{ user.id }}', '{{ user.full_name }}')">
-                    Reset ↺
-                </button>
+                <a href="/admin/logout" class="sb-logout" title="Logout">✕</a>
             </div>
-            {% endfor %}
+        </div>
+    </aside>
+
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-title" id="topbar-title">Dashboard Overview</div>
+            <div class="topbar-right">
+                <div class="mode-badge vuln" id="modeBadge" onclick="toggleMode()">
+                    <div class="mode-dot"></div>
+                    <span id="modeText">VULNERABLE MODE</span>
+                </div>
+                <a href="/admin/export-logs" class="tb-btn">↓ Export CSV</a>
+                <a href="/admin/logout" class="tb-btn danger">Logout</a>
+            </div>
         </div>
 
-        <!-- Active Sessions -->
-        <div class="panel">
-            <div class="ph">
-                <div class="ph-title">Active Sessions</div>
-                <span class="ph-sub">{{ active_sessions|length }} active</span>
+        <div class="page">
+
+        <!-- DASHBOARD -->
+        <div class="section-page active" id="sec-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card c1">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-val" style="color:var(--accent)" id="st-users">{{ total_users }}</div>
+                    <div class="stat-sub">Active honeypot accounts</div>
+                </div>
+                <div class="stat-card c2">
+                    <div class="stat-label">Transactions</div>
+                    <div class="stat-val" style="color:var(--blue)" id="st-txns">{{ total_txns }}</div>
+                    <div class="stat-sub">Across all accounts</div>
+                </div>
+                <div class="stat-card c3">
+                    <div class="stat-label">Attack Events</div>
+                    <div class="stat-val" style="color:var(--red)" id="st-attacks">{{ total_attacks }}</div>
+                    <div class="stat-sub">{{ high_attacks }} HIGH/CRITICAL</div>
+                </div>
+                <div class="stat-card c4">
+                    <div class="stat-label">Bait Creds Used</div>
+                    <div class="stat-val" style="color:var(--green)">{{ bait_hits }}</div>
+                    <div class="stat-sub">Successful bait logins</div>
+                </div>
             </div>
-            {% if active_sessions %}
-                {% for sess in active_sessions %}
-                <div class="sess-row">
-                    <div class="sess-dot active"></div>
-                    <div class="sess-info">
-                        <div class="sess-user">{{ sess.username }}</div>
-                        <div class="sess-ip">{{ sess.ip_address }}</div>
+
+            <div class="two-col">
+                <div class="panel" style="animation-delay:0.25s;">
+                    <div class="ph">
+                        <div class="ph-title">Bait Users</div>
+                        <button class="action-btn btn-reset" onclick="confirmAction('Reset all balances to original values?',resetAllBalances,'Reset All Balances')">Reset All ↺</button>
                     </div>
-                    <div class="sess-time">{{ sess.login_time[:16] if sess.login_time else '—' }}</div>
+                    <table class="user-table">
+                        <thead><tr><th>User</th><th>Balance</th><th>Type</th><th>Actions</th></tr></thead>
+                        <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td><div class="user-name-cell">
+                                <div class="user-avatar {% if loop.index==1 %}ua-g{% elif loop.index==2 %}ua-b{% else %}ua-o{% endif %}">{{ u.full_name[0] }}</div>
+                                <div><div class="user-name">{{ u.full_name }}</div><div class="user-meta">{{ u.username }}</div></div>
+                            </div></td>
+                            <td><div class="balance-val" id="bal-{{ u.id }}">${{ "%.2f"|format(u.balance) }}</div></td>
+                            <td><span class="acc-type-badge {% if u.account_type=='savings' %}atb-savings{% else %}atb-current{% endif %}">{{ u.account_type }}</span></td>
+                            <td><div style="display:flex;gap:6px;">
+                                <button class="action-btn btn-reset" onclick="resetBalance('{{ u.id }}','{{ u.full_name }}')">↺</button>
+                                <button class="action-btn btn-view" onclick="showSection('users',document.querySelectorAll('.sb-item')[4])">View</button>
+                            </div></td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                {% endfor %}
-            {% else %}
-                <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">No active sessions</div>
-            {% endif %}
+                <div class="panel" style="animation-delay:0.3s;">
+                    <div class="ph">
+                        <div class="ph-title">Active Sessions</div>
+                        <span class="ph-sub">{{ active_sessions|length }} sessions</span>
+                    </div>
+                    {% if active_sessions %}
+                        {% for s in active_sessions[:8] %}
+                        <div class="sess-row">
+                            <div class="sess-dot"></div>
+                            <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">{{ s.username }}</div><div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">{{ s.ip_address }}</div></div>
+                            <div style="font-size:11px;color:var(--muted2);">{{ s.login_time[:16] if s.login_time else '—' }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}<div class="empty">No active sessions</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="panel" style="animation-delay:0.35s;">
+                    <div class="ph"><div class="ph-title">Severity Breakdown</div><span class="ph-sub">{{ total_attacks }} total</span></div>
+                    {% set ts = total_attacks if total_attacks > 0 else 1 %}
+                    <div class="sev-bar-row"><div class="sev-bar-head"><span style="color:var(--red);font-weight:700;">HIGH / CRITICAL</span><span style="color:var(--red);">{{ high_attacks }} ({{ [(high_attacks/ts*100)|int,100]|min }}%)</span></div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:{{ [(high_attacks/ts*100)|int,100]|min }}%;background:var(--red);"></div></div></div>
+                    <div class="sev-bar-row"><div class="sev-bar-head"><span style="color:var(--orange);font-weight:700;">MEDIUM</span><span style="color:var(--orange);">{{ medium_attacks }} ({{ [(medium_attacks/ts*100)|int,100]|min }}%)</span></div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:{{ [(medium_attacks/ts*100)|int,100]|min }}%;background:var(--orange);"></div></div></div>
+                    <div class="sev-bar-row"><div class="sev-bar-head"><span style="color:var(--green);font-weight:700;">LOW</span><span style="color:var(--green);">{{ low_attacks }} ({{ [(low_attacks/ts*100)|int,100]|min }}%)</span></div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:{{ [(low_attacks/ts*100)|int,100]|min }}%;background:var(--green);"></div></div></div>
+                </div>
+                <div class="panel" style="animation-delay:0.4s;">
+                    <div class="ph"><div class="ph-title">Quick Actions</div></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <button class="ac-btn ac-green" onclick="seedAttacks()" style="padding:10px;">🎯 Seed Attacks</button>
+                        <a href="/admin/export-logs" class="ac-btn ac-blue" style="padding:10px;text-align:center;text-decoration:none;display:block;">📥 Export CSV</a>
+                        <button class="ac-btn ac-orange" onclick="confirmAction('Delete ALL attack logs?',clearLogs,'Clear Logs')" style="padding:10px;">🗑️ Clear Logs</button>
+                        <button class="ac-btn ac-red" onclick="confirmAction('Reset all transactions?',clearTransactions,'Reset Transactions')" style="padding:10px;">♻️ Reset Txns</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="animation-delay:0.45s;">
+                <div class="ph"><div class="ph-title">Recent Attack Activity</div><a onclick="showSection('attacks',null)" style="font-size:12px;color:var(--muted);cursor:pointer;">View all →</a></div>
+                {% if recent_activity %}
+                <table class="log-table">
+                    <thead><tr><th>Time</th><th>Attack Type</th><th>Severity</th><th>IP</th><th>Username</th><th>Endpoint</th></tr></thead>
+                    <tbody>{% for a in recent_activity %}<tr>
+                        <td class="atk-time">{{ a.timestamp[:16] if a.timestamp else '—' }}</td>
+                        <td><span class="atk-type">{{ a.attack_type }}</span></td>
+                        <td><span class="sev sev-{{ a.severity }}">{{ a.severity }}</span></td>
+                        <td class="atk-ip">{{ a.ip_address or '—' }}</td>
+                        <td style="font-size:12px;color:var(--muted);">{{ a.username_tried or '—' }}</td>
+                        <td style="font-size:11px;color:var(--muted2);font-family:'JetBrains Mono',monospace;">{{ a.endpoint or '—' }}</td>
+                    </tr>{% endfor %}</tbody>
+                </table>
+                {% else %}<div class="empty">No attacks yet — use Seed Demo Attacks</div>{% endif %}
+            </div>
+        </div>
+
+        <!-- USERS -->
+        <div class="section-page" id="sec-users">
+            <div class="panel" style="animation:none;opacity:1;">
+                <div class="ph">
+                    <div class="ph-title">User Management</div>
+                    <div style="display:flex;gap:8px;">
+                        <button class="action-btn btn-reset" onclick="confirmAction('Reset ALL balances?',resetAllBalances,'Reset All')">Reset All Balances</button>
+                        <span class="ph-sub">{{ total_users }} accounts</span>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="userSearch" placeholder="Search by name, username, email..." oninput="filterUsers()"/>
+                </div>
+                <table class="user-table">
+                    <thead><tr><th>User</th><th>Email</th><th>Account No.</th><th>Balance</th><th>Type</th><th>Since</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    {% for u in users %}
+                    <tr class="user-row" data-name="{{ u.full_name|lower }}" data-user="{{ u.username|lower }}" data-email="{{ u.email|lower }}">
+                        <td><div class="user-name-cell">
+                            <div class="user-avatar {% if loop.index==1 %}ua-g{% elif loop.index==2 %}ua-b{% else %}ua-o{% endif %}">{{ u.full_name[0] }}</div>
+                            <div><div class="user-name">{{ u.full_name }}</div><div class="user-meta">{{ u.username }}</div></div>
+                        </div></td>
+                        <td style="font-size:12px;color:var(--muted);">{{ u.email }}</td>
+                        <td><span class="user-meta">{{ u.account_number }}</span></td>
+                        <td><div class="balance-val" id="bal2-{{ u.id }}">${{ "%.2f"|format(u.balance) }}</div></td>
+                        <td><span class="acc-type-badge {% if u.account_type=='savings' %}atb-savings{% else %}atb-current{% endif %}">{{ u.account_type }}</span></td>
+                        <td style="font-size:12px;color:var(--muted);">{{ u.member_since }}</td>
+                        <td><div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button class="action-btn btn-reset" onclick="resetBalance('{{ u.id }}','{{ u.full_name }}')">↺ Reset</button>
+                            <button class="action-btn btn-view" onclick="viewUserTxns('{{ u.id }}','{{ u.full_name }}')">Transactions</button>
+                            <button class="action-btn btn-suspend" onclick="showToast('Bait users cannot be suspended — they must remain active for honeypot operation.','error')">Suspend</button>
+                        </div></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div id="userTxnPanel" style="display:none;margin-top:16px;">
+                <div class="panel" style="animation:none;opacity:1;">
+                    <div class="ph">
+                        <div class="ph-title" id="txnPanelTitle">Transactions</div>
+                        <button class="action-btn btn-view" onclick="document.getElementById('userTxnPanel').style.display='none'">Close ✕</button>
+                    </div>
+                    <div id="txnPanelBody"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SESSIONS -->
+        <div class="section-page" id="sec-sessions">
+            <div class="panel" style="animation:none;opacity:1;">
+                <div class="ph"><div class="ph-title">All Login Sessions</div><span class="ph-sub">{{ active_sessions|length }} sessions</span></div>
+                {% if active_sessions %}
+                <table class="log-table">
+                    <thead><tr><th>Status</th><th>Username</th><th>IP Address</th><th>Login Time</th><th>Last Active</th></tr></thead>
+                    <tbody>{% for s in active_sessions %}<tr>
+                        <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--green);"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;"></span>Active</span></td>
+                        <td style="font-weight:600;color:white;font-size:13px;">{{ s.username }}</td>
+                        <td class="atk-ip">{{ s.ip_address or '—' }}</td>
+                        <td class="atk-time">{{ s.login_time[:16] if s.login_time else '—' }}</td>
+                        <td class="atk-time">{{ s.last_active[:16] if s.last_active else '—' }}</td>
+                    </tr>{% endfor %}</tbody>
+                </table>
+                {% else %}<div class="empty">No sessions recorded yet</div>{% endif %}
+            </div>
+        </div>
+
+        <!-- TRANSACTIONS -->
+        <div class="section-page" id="sec-transactions">
+            <div class="panel" style="animation:none;opacity:1;">
+                <div class="ph">
+                    <div class="ph-title">All Transactions</div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button class="action-btn btn-suspend" onclick="confirmAction('Reset all user-generated transactions?',clearTransactions,'Reset Transactions')">Reset Transactions</button>
+                        <span class="ph-sub" id="txn-count-label">{{ total_txns }} total</span>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="txnSearch" placeholder="Search transactions..." oninput="filterTxns()"/>
+                    <select class="search-input" id="txnUserFilter" style="max-width:180px;" onchange="filterTxns()">
+                        <option value="">All Users</option>
+                        {% for u in users %}<option value="{{ u.id }}">{{ u.full_name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <table class="log-table">
+                    <thead><tr><th>Date</th><th>User</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th><th>Category</th></tr></thead>
+                    <tbody id="txnBody">
+                    {% for t in all_transactions %}
+                    <tr class="txn-row" data-user="{{ t.user_id }}" data-desc="{{ t.description|lower }}">
+                        <td class="atk-time">{{ t.timestamp[:10] if t.timestamp else '—' }}</td>
+                        <td style="font-size:12px;color:var(--muted);">{% for u in users %}{% if u.id == t.user_id %}{{ u.full_name }}{% endif %}{% endfor %}</td>
+                        <td><span class="tag {% if t.type=='credit' %}tag-green{% else %}tag-red{% endif %}">{{ t.type }}</span></td>
+                        <td style="font-weight:700;color:{% if t.type=='credit' %}var(--green){% else %}var(--red){% endif %};">{{ '+' if t.type=='credit' else '-' }}${{ "%.2f"|format(t.amount) }}</td>
+                        <td style="font-size:12px;color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ t.description }}</td>
+                        <td><span class="tag {% if t.status=='completed' %}tag-green{% else %}tag-blue{% endif %}">{{ t.status }}</span></td>
+                        <td style="font-size:11px;color:var(--muted);">{{ t.category }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ATTACKS -->
+        <div class="section-page" id="sec-attacks">
+            <div class="panel" style="animation:none;opacity:1;">
+                <div class="ph">
+                    <div class="ph-title">Attack Logs</div>
+                    <div style="display:flex;gap:8px;">
+                        <button class="action-btn btn-reset" onclick="seedAttacks()">🎯 Seed Demo</button>
+                        <a href="/admin/export-logs" class="action-btn btn-view" style="text-decoration:none;">📥 Export</a>
+                        <button class="action-btn btn-suspend" onclick="confirmAction('Delete ALL attack logs?',clearLogs,'Clear Logs')">🗑️ Clear</button>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="atkSearch" placeholder="Search attack type, IP, username..." oninput="filterAtks()"/>
+                    <select class="search-input" id="atkSevFilter" style="max-width:160px;" onchange="filterAtks()">
+                        <option value="">All Severities</option>
+                        <option value="CRITICAL">CRITICAL</option>
+                        <option value="HIGH">HIGH</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                        <option value="LOW">LOW</option>
+                    </select>
+                </div>
+                {% if all_attacks %}
+                <table class="log-table">
+                    <thead><tr><th>Time</th><th>Attack Type</th><th>Severity</th><th>IP</th><th>Username</th><th>Endpoint</th><th>Details</th></tr></thead>
+                    <tbody id="atkBody">
+                    {% for a in all_attacks %}
+                    <tr class="atk-row" data-type="{{ a.attack_type|lower }}" data-ip="{{ a.ip_address|lower }}" data-user="{{ (a.username_tried or '')|lower }}" data-sev="{{ a.severity }}">
+                        <td class="atk-time">{{ a.timestamp[:16] if a.timestamp else '—' }}</td>
+                        <td><span class="atk-type">{{ a.attack_type }}</span></td>
+                        <td><span class="sev sev-{{ a.severity }}">{{ a.severity }}</span></td>
+                        <td class="atk-ip">{{ a.ip_address or '—' }}</td>
+                        <td style="font-size:12px;color:var(--muted);">{{ a.username_tried or '—' }}</td>
+                        <td style="font-size:11px;color:var(--muted2);font-family:'JetBrains Mono',monospace;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.endpoint or '—' }}</td>
+                        <td style="font-size:11px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.details or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}<div class="empty">No attacks yet — use Seed Demo to populate</div>{% endif %}
+            </div>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div class="section-page" id="sec-analytics">
+            <div class="two-col">
+                <div class="panel" style="animation:none;opacity:1;">
+                    <div class="ph"><div class="ph-title">Attack Distribution</div></div>
+                    {% set ts = total_attacks if total_attacks > 0 else 1 %}
+                    {% for name, count, color in [('IDOR Attacks',idor_hits,'var(--blue)'),('SQL Injection',sqli_hits,'var(--red)'),('Bait Creds',bait_hits,'var(--orange)'),('API Abuse',api_hits,'var(--accent)'),('Data Exposure',expo_hits,'var(--green)')] %}
+                    <div class="sev-bar-row">
+                        <div class="sev-bar-head"><span style="color:{{ color }};font-weight:700;">{{ name }}</span><span style="color:{{ color }};">{{ count }} ({{ [(count/ts*100)|int,100]|min }}%)</span></div>
+                        <div class="sev-bar-track"><div class="sev-bar-fill" style="width:{{ [(count/ts*100)|int,100]|min }}%;background:{{ color }};"></div></div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="panel" style="animation:none;opacity:1;">
+                    <div class="ph"><div class="ph-title">Balance Overview</div></div>
+                    {% for u in users %}
+                    <div class="sev-bar-row">
+                        <div class="sev-bar-head"><span style="font-weight:700;color:white;">{{ u.full_name }}</span><span style="color:var(--green);">${{ "%.2f"|format(u.balance) }}</span></div>
+                        <div class="sev-bar-track"><div class="sev-bar-fill" style="width:{{ [(u.balance/30000*100)|int,100]|min }}%;background:var(--accent);"></div></div>
+                    </div>
+                    {% endfor %}
+                    <div style="margin-top:20px;">
+                        <div class="ph"><div class="ph-title" style="font-size:13px;">Top Attacker IPs</div></div>
+                        {% if top_ips %}{% for ip in top_ips %}
+                        <div class="sess-row">
+                            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);width:20px;">{{ loop.index }}</span>
+                            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:white;flex:1;">{{ ip.ip_address }}</span>
+                            <span style="color:var(--red);font-weight:700;font-size:12px;">{{ ip.count }}</span>
+                        </div>
+                        {% endfor %}{% else %}<div class="empty">No data yet</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOOLS -->
+        <div class="section-page" id="sec-tools">
+            <div class="four-col">
+                <div class="action-card"><div class="ac-icon">🎯</div><div class="ac-title">Seed Demo Attacks</div><div class="ac-desc">Insert 10 sample attack events for demonstration purposes.</div><button class="ac-btn ac-green" onclick="seedAttacks()">Seed Attacks</button></div>
+                <div class="action-card"><div class="ac-icon">💰</div><div class="ac-title">Reset All Balances</div><div class="ac-desc">Restore all 3 bait users to original amounts. John $24,350 · Sarah $15,200.50 · Mike $8,750.</div><button class="ac-btn ac-blue" onclick="confirmAction('Reset all balances?',resetAllBalances,'Reset Balances')">Reset Balances</button></div>
+                <div class="action-card"><div class="ac-icon">📥</div><div class="ac-title">Export Attack Logs</div><div class="ac-desc">Download all attack logs as a timestamped CSV file.</div><a href="/admin/export-logs" class="ac-btn ac-blue" style="text-align:center;text-decoration:none;display:block;padding:9px;">Download CSV</a></div>
+                <div class="action-card"><div class="ac-icon">🗑️</div><div class="ac-title">Clear Attack Logs</div><div class="ac-desc">Delete all attack log entries. Use before a fresh live demo.</div><button class="ac-btn ac-orange" onclick="confirmAction('Delete ALL attack logs?',clearLogs,'Clear Logs')">Clear Logs</button></div>
+                <div class="action-card"><div class="ac-icon">♻️</div><div class="ac-title">Reset Transactions</div><div class="ac-desc">Remove all user-generated transfers. Preserves original seeded records.</div><button class="ac-btn ac-red" onclick="confirmAction('Reset all transactions?',clearTransactions,'Reset')">Reset Transactions</button></div>
+                <div class="action-card"><div class="ac-icon">🔄</div><div class="ac-title">Toggle System Mode</div><div class="ac-desc">Switch between VULNERABLE (honeypot) and SECURE (defenses) mode live.</div><button class="ac-btn ac-orange" onclick="toggleMode()">Toggle Mode</button></div>
+                <div class="action-card"><div class="ac-icon">🛡️</div><div class="ac-title">SOC Dashboard</div><div class="ac-desc">Open live threat monitoring panel with attack feed and severity breakdown.</div><a href="/security/dashboard" class="ac-btn ac-green" style="text-align:center;text-decoration:none;display:block;padding:9px;">Open SOC →</a></div>
+                <div class="action-card"><div class="ac-icon">📖</div><div class="ac-title">API Explorer</div><div class="ac-desc">Browse all 30+ honeypot endpoints with interactive Try It buttons.</div><a href="/api/docs" class="ac-btn ac-blue" style="text-align:center;text-decoration:none;display:block;padding:9px;">Open Docs →</a></div>
+            </div>
+        </div>
+
         </div>
     </div>
-
-    <!-- Quick Actions -->
-    <div class="panel" style="margin-bottom:20px;animation-delay:0.38s;">
-        <div class="ph">
-            <div class="ph-title">Quick Actions</div>
-            <span class="ph-sub">System management tools</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
-
-            <div class="action-card">
-                <div class="action-icon">📥</div>
-                <div class="action-title">Export Attack Logs</div>
-                <div class="action-desc">Download all attack logs as a CSV file for analysis and reporting.</div>
-                <button class="btn-action blue" onclick="window.location.href='/admin/export-logs'">
-                    Download CSV
-                </button>
-            </div>
-
-            <div class="action-card">
-                <div class="action-icon">🎯</div>
-                <div class="action-title">Seed Demo Attacks</div>
-                <div class="action-desc">Insert 10 sample attack events into the database for demonstration.</div>
-                <button class="btn-action green" onclick="confirmAction('Insert 10 sample attack events for demo?', seedAttacks, '🎯', 'Seed Attacks')">
-                    Seed Attacks
-                </button>
-            </div>
-
-            <div class="action-card">
-                <div class="action-icon">🗑️</div>
-                <div class="action-title">Clear Attack Logs</div>
-                <div class="action-desc">Delete all attack log entries from the database. Use before a live demo.</div>
-                <button class="btn-action orange" onclick="confirmAction('Delete ALL attack logs? This cannot be undone.', clearLogs, '🗑️', 'Clear Logs')">
-                    Clear Logs
-                </button>
-            </div>
-
-            <div class="action-card">
-                <div class="action-icon">♻️</div>
-                <div class="action-title">Reset Transactions</div>
-                <div class="action-desc">Remove all user-generated transactions and restore original seed data.</div>
-                <button class="btn-action red" onclick="confirmAction('Delete all transactions? This cannot be undone.', clearTransactions, '♻️', 'Reset Transactions')">
-                    Reset Transactions
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="panel" style="animation-delay:0.44s;">
-        <div class="ph">
-            <div class="ph-title">Recent Attack Activity</div>
-            <a href="/security/dashboard" style="font-size:12px;color:var(--muted);text-decoration:none;">View full SOC panel →</a>
-        </div>
-        {% if recent_activity %}
-        <table class="atk-table">
-            <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>Attack Type</th>
-                    <th>Severity</th>
-                    <th>IP Address</th>
-                    <th>Username</th>
-                    <th>Endpoint</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for atk in recent_activity %}
-                <tr>
-                    <td class="atk-time">{{ atk.timestamp[:16] if atk.timestamp else '—' }}</td>
-                    <td><span class="atk-type">{{ atk.attack_type }}</span></td>
-                    <td><span class="sev-pill sev-{{ atk.severity }}">{{ atk.severity }}</span></td>
-                    <td class="atk-ip">{{ atk.ip_address or '—' }}</td>
-                    <td style="font-size:12px;color:var(--muted);">{{ atk.username_tried or '—' }}</td>
-                    <td style="font-size:11px;color:var(--muted2);font-family:'JetBrains Mono',monospace;">{{ atk.endpoint or '—' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">
-            No attack activity yet — use "Seed Demo Attacks" to populate data
-        </div>
-        {% endif %}
-    </div>
-
 </div>
 
-<footer class="footer">
-    <div class="footer-copy">Z BANK ADMIN · PRJN26-213 · {{ total_attacks }} total events logged</div>
-    <div class="footer-copy">© 2026 Z Bank Financial Services</div>
-</footer>
-
 <script>
-    // ── Toast ──
-    function showToast(msg, type='success') {
-        const t = document.getElementById('toast');
-        t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
-        t.className = 'toast ' + type;
-        t.style.display = 'block';
-        setTimeout(() => { t.style.display = 'none'; }, 3500);
-    }
-
-    // ── Confirm Modal ──
-    let pendingAction = null;
-    function confirmAction(message, fn, icon='⚠️', title='Confirm Action') {
-        document.getElementById('modalSub').textContent = message;
-        document.getElementById('modalIcon').textContent = icon;
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('modalConfirm').onclick = function() {
-            closeModal();
-            fn();
-        };
-        document.getElementById('modalBg').style.display = 'flex';
-    }
-    function closeModal() {
-        document.getElementById('modalBg').style.display = 'none';
-    }
-
-    // ── Reset Single Balance ──
-    function resetBalance(userId, name) {
-        confirmAction(`Reset ${name}'s balance to original value?`, function() {
-            const fd = new FormData();
-            fd.append('user_id', userId);
-            fetch('/admin/reset-balance', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const el = document.getElementById('bal-' + userId);
-                    if (el) el.textContent = '$' + data.user.balance.toFixed(2);
-                    showToast(data.message);
-                } else {
-                    showToast(data.error || 'Failed', 'error');
-                }
-            }).catch(() => showToast('Request failed', 'error'));
-        }, '💰', 'Reset Balance');
-    }
-
-    // ── Reset All Balances ──
-    function resetAllBalances() {
-        fetch('/admin/reset-all-balances', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'success') {
-                showToast(data.message);
-                setTimeout(() => location.reload(), 1200);
-            } else {
-                showToast(data.error || 'Failed', 'error');
-            }
-        }).catch(() => showToast('Request failed', 'error'));
-    }
-
-    // ── Clear Logs ──
-    function clearLogs() {
-        fetch('/admin/clear-logs', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            showToast(data.message);
-            document.getElementById('stat-attacks').textContent = '0';
-            setTimeout(() => location.reload(), 1200);
-        }).catch(() => showToast('Request failed', 'error'));
-    }
-
-    // ── Clear Transactions ──
-    function clearTransactions() {
-        fetch('/admin/clear-transactions', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            showToast(data.message);
-            setTimeout(() => location.reload(), 1200);
-        }).catch(() => showToast('Request failed', 'error'));
-    }
-
-    // ── Seed Attacks ──
-    function seedAttacks() {
-        fetch('/admin/seed-attacks', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            showToast(data.message);
-            setTimeout(() => location.reload(), 1200);
-        }).catch(() => showToast('Request failed', 'error'));
-    }
-
-    // ── Auto refresh stats every 15s ──
-    setInterval(function() {
-        fetch('/admin/api/stats')
-        .then(r => r.json())
-        .then(data => {
-            if (data.total_attacks !== undefined) {
-                document.getElementById('stat-attacks').textContent = data.total_attacks;
-                document.getElementById('stat-txns').textContent = data.total_txns;
-            }
-        }).catch(() => {});
-    }, 15000);
+const sectionTitles={dashboard:'Dashboard Overview',users:'User Management',sessions:'Login Sessions',transactions:'All Transactions',attacks:'Attack Logs',analytics:'Analytics',tools:'System Tools'};
+function showSection(name,el){
+    document.querySelectorAll('.section-page').forEach(s=>s.classList.remove('active'));
+    document.getElementById('sec-'+name).classList.add('active');
+    document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+    if(el)el.classList.add('active');
+    document.getElementById('topbar-title').textContent=sectionTitles[name]||name;
+}
+function showToast(msg,type='success'){
+    const t=document.getElementById('toast');
+    t.textContent=(type==='success'?'✓ ':'✗ ')+msg;
+    t.className='toast '+type; t.style.display='block';
+    setTimeout(()=>t.style.display='none',3500);
+}
+function confirmAction(msg,fn,title='Confirm'){
+    document.getElementById('modalSub').textContent=msg;
+    document.getElementById('modalTitle').textContent=title;
+    document.getElementById('modalConfirm').onclick=()=>{closeModal();fn();};
+    document.getElementById('modalBg').style.display='flex';
+}
+function closeModal(){document.getElementById('modalBg').style.display='none';}
+function resetBalance(uid,name){
+    confirmAction('Reset '+name+"'s balance to original?",function(){
+        const fd=new FormData();fd.append('user_id',uid);
+        fetch('/admin/reset-balance',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+            if(d.status==='success'){
+                const val='$'+parseFloat(d.user.balance).toFixed(2);
+                ['bal-'+uid,'bal2-'+uid].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=val;});
+                showToast(d.message);
+            }else showToast(d.error||'Failed','error');
+        }).catch(()=>showToast('Failed','error'));
+    },'Reset Balance');
+}
+function resetAllBalances(){
+    fetch('/admin/reset-all-balances',{method:'POST'}).then(r=>r.json()).then(d=>{
+        showToast(d.message);setTimeout(()=>location.reload(),1200);
+    }).catch(()=>showToast('Failed','error'));
+}
+function clearLogs(){
+    fetch('/admin/clear-logs',{method:'POST'}).then(r=>r.json()).then(d=>{
+        showToast(d.message);setTimeout(()=>location.reload(),1200);
+    }).catch(()=>showToast('Failed','error'));
+}
+function clearTransactions(){
+    fetch('/admin/clear-transactions',{method:'POST'}).then(r=>r.json()).then(d=>{
+        showToast(d.message);setTimeout(()=>location.reload(),1200);
+    }).catch(()=>showToast('Failed','error'));
+}
+function seedAttacks(){
+    fetch('/admin/seed-attacks',{method:'POST'}).then(r=>r.json()).then(d=>{
+        showToast(d.message);setTimeout(()=>location.reload(),1200);
+    }).catch(()=>showToast('Failed','error'));
+}
+function toggleMode(){
+    fetch('/admin/toggle-mode',{method:'POST'}).then(r=>r.json()).then(d=>{
+        const badge=document.getElementById('modeBadge');
+        const text=document.getElementById('modeText');
+        if(d.mode==='SECURE'){badge.className='mode-badge secure';text.textContent='SECURE MODE';}
+        else{badge.className='mode-badge vuln';text.textContent='VULNERABLE MODE';}
+        showToast('Switched to '+d.mode+' mode');
+    }).catch(()=>showToast('Failed','error'));
+}
+function viewUserTxns(uid,name){
+    document.getElementById('txnPanelTitle').textContent=name+' — Transactions';
+    document.getElementById('userTxnPanel').style.display='block';
+    fetch('/admin/api/user-transactions?user_id='+uid).then(r=>r.json()).then(d=>{
+        if(!d.transactions||d.transactions.length===0){document.getElementById('txnPanelBody').innerHTML='<div class="empty">No transactions</div>';return;}
+        let html='<table class="log-table"><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th></tr></thead><tbody>';
+        d.transactions.forEach(t=>{
+            const col=t.type==='credit'?'var(--green)':'var(--red)';
+            html+=`<tr><td class="atk-time">${(t.timestamp||'').slice(0,10)}</td><td><span class="tag ${t.type==='credit'?'tag-green':'tag-red'}">${t.type}</span></td><td style="font-weight:700;color:${col};">${t.type==='credit'?'+':'-'}$${parseFloat(t.amount).toFixed(2)}</td><td style="font-size:12px;color:var(--muted);">${t.description||'—'}</td><td><span class="tag ${t.status==='completed'?'tag-green':'tag-blue'}">${t.status}</span></td></tr>`;
+        });
+        html+='</tbody></table>';
+        document.getElementById('txnPanelBody').innerHTML=html;
+        document.getElementById('userTxnPanel').scrollIntoView({behavior:'smooth'});
+    }).catch(()=>{document.getElementById('txnPanelBody').innerHTML='<div class="empty">Failed to load</div>';});
+}
+function filterUsers(){
+    const q=document.getElementById('userSearch').value.toLowerCase();
+    document.querySelectorAll('.user-row').forEach(r=>{
+        r.style.display=(r.dataset.name.includes(q)||r.dataset.user.includes(q)||r.dataset.email.includes(q))?'':'none';
+    });
+}
+function filterTxns(){
+    const q=document.getElementById('txnSearch').value.toLowerCase();
+    const uid=document.getElementById('txnUserFilter').value;
+    document.querySelectorAll('.txn-row').forEach(r=>{
+        r.style.display((!q||r.dataset.desc.includes(q))&&(!uid||r.dataset.user===uid)?'':'none');
+    });
+}
+function filterAtks(){
+    const q=document.getElementById('atkSearch').value.toLowerCase();
+    const sev=document.getElementById('atkSevFilter').value;
+    document.querySelectorAll('.atk-row').forEach(r=>{
+        const mq=!q||r.dataset.type.includes(q)||r.dataset.ip.includes(q)||r.dataset.user.includes(q);
+        const ms=!sev||r.dataset.sev===sev;
+        r.style.display=(mq&&ms)?'':'none';
+    });
+}
+setInterval(function(){
+    fetch('/admin/api/stats').then(r=>r.json()).then(d=>{
+        if(d.total_attacks!==undefined){
+            document.getElementById('st-attacks').textContent=d.total_attacks;
+            document.getElementById('st-txns').textContent=d.total_txns;
+            document.getElementById('sb-atk-count').textContent=d.total_attacks;
+            document.getElementById('sb-txn-count').textContent=d.total_txns;
+        }
+    }).catch(()=>{});
+},15000);
 </script>
 </body>
 </html>

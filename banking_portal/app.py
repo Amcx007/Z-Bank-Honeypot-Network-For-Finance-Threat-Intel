@@ -4,7 +4,9 @@ import uuid
 import sqlite3
 import hashlib
 import os
+import socket
 from datetime import datetime, timedelta
+
 
 app = Flask(__name__)
 app.secret_key = "zbank_honeypot_secret_key_2026"
@@ -164,48 +166,88 @@ def init_db():
              balance, account_type, phone, address, member_since)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', user)
 
-    # Seed transactions
+    # Seed transactions — properly balanced, synced across all 3 users
+    # John Anderson (ACC-4521-XXXX) — starting balance: 24350.00
+    # Sarah Kim     (ACC-8821-XXXX) — starting balance: 15200.50
+    # Mike Chen     (ACC-3392-XXXX) — starting balance:  8750.00
     seed_transactions = [
-        (1, "credit", 5200.00, "Salary Credit — TechCorp Ltd", "TechCorp Ltd",
-         "ACC-4521-XXXX", 24350.00, "2026-04-22T09:00:00Z", "completed", "Income"),
-        (1, "debit", 14.99, "Amazon Prime Subscription", "ACC-4521-XXXX",
-         "Amazon", 19150.00, "2026-04-21T14:15:00Z", "completed", "Subscription"),
-        (1, "debit", 500.00, "Fund Transfer — Sarah Kim", "ACC-4521-XXXX",
-         "ACC-8821-XXXX", 18650.00, "2026-04-20T11:30:00Z", "completed", "Transfer"),
-        (1, "debit", 85.50, "Electricity Bill Payment", "ACC-4521-XXXX",
-         "City Electric", 18564.50, "2026-04-19T08:45:00Z", "completed", "Utilities"),
-        (1, "debit", 200.00, "ATM Withdrawal", "ACC-4521-XXXX",
-         "ATM #4821", 18364.50, "2026-04-18T15:20:00Z", "pending", "Cash"),
-        (1, "debit", 1200.00, "Rent Payment — April 2026", "ACC-4521-XXXX",
-         "Oak Street Properties", 17164.50, "2026-04-17T09:00:00Z", "completed", "Housing"),
-        (1, "debit", 25.00, "Mobile Recharge", "ACC-4521-XXXX",
-         "Verizon", 17139.50, "2026-04-15T18:10:00Z", "completed", "Mobile"),
-        (2, "credit", 4800.00, "Salary Credit — DesignCo", "DesignCo LLC",
-         "ACC-8821-XXXX", 15200.50, "2026-04-22T09:00:00Z", "completed", "Income"),
-        (2, "credit", 500.00, "Received Transfer — John Anderson", "ACC-4521-XXXX",
-         "ACC-8821-XXXX", 10400.50, "2026-04-20T11:35:00Z", "completed", "Transfer"),
-        (2, "debit", 320.00, "Online Shopping — Zara", "ACC-8821-XXXX",
-         "Zara Store", 9900.50, "2026-04-21T16:00:00Z", "completed", "Shopping"),
-        (2, "debit", 65.00, "Netflix & Spotify", "ACC-8821-XXXX",
-         "Subscriptions", 9835.50, "2026-04-20T08:00:00Z", "completed", "Subscription"),
-        (2, "debit", 450.00, "Grocery Shopping", "ACC-8821-XXXX",
-         "Whole Foods", 9385.50, "2026-04-18T12:30:00Z", "completed", "Food"),
-        (2, "debit", 800.00, "Rent — April 2026", "ACC-8821-XXXX",
-         "Park Avenue Realty", 8585.50, "2026-04-17T09:00:00Z", "completed", "Housing"),
-        (3, "credit", 3200.00, "Freelance Payment — StartupXYZ", "StartupXYZ Inc",
-         "ACC-3392-XXXX", 8750.00, "2026-04-22T10:00:00Z", "completed", "Income"),
-        (3, "debit", 950.00, "Rent — April 2026", "ACC-3392-XXXX",
-         "Broadway Apartments", 5550.00, "2026-04-17T09:00:00Z", "completed", "Housing"),
-        (3, "debit", 180.00, "Grocery & Dining", "ACC-3392-XXXX",
-         "Various", 5370.00, "2026-04-21T19:00:00Z", "completed", "Food"),
-        (3, "debit", 55.00, "Internet Bill", "ACC-3392-XXXX",
-         "Comcast", 5315.00, "2026-04-19T08:00:00Z", "completed", "Utilities"),
-        (3, "debit", 200.00, "ATM Withdrawal", "ACC-3392-XXXX",
-         "ATM #1234", 5115.00, "2026-04-18T14:00:00Z", "completed", "Cash"),
-        (3, "credit", 500.00, "Client Bonus", "ClientABC",
-         "ACC-3392-XXXX", 5615.00, "2026-04-16T11:00:00Z", "completed", "Income"),
-        (3, "debit", 89.99, "Adobe Creative Cloud", "ACC-3392-XXXX",
-         "Adobe", 5525.00, "2026-04-15T08:00:00Z", "completed", "Subscription"),
+        # ── JOHN ANDERSON (user_id=1) ──────────────────────────────────────
+        (1,"credit",5200.00,"Salary Credit — TechCorp Ltd","TechCorp Ltd",
+         "ACC-4521-XXXX",24350.00,"2026-04-22T09:00:00Z","completed","Income"),
+        (1,"debit",1200.00,"Rent Payment — April 2026","ACC-4521-XXXX",
+         "Oak Street Properties",23150.00,"2026-04-21T09:00:00Z","completed","Housing"),
+        (1,"debit",500.00,"Fund Transfer — Sarah Kim","ACC-4521-XXXX",
+         "ACC-8821-XXXX",22650.00,"2026-04-20T11:30:00Z","completed","Transfer"),
+        (1,"debit",350.00,"Grocery Shopping — Whole Foods","ACC-4521-XXXX",
+         "Whole Foods Market",22300.00,"2026-04-19T14:00:00Z","completed","Food"),
+        (1,"debit",85.50,"Electricity Bill — City Electric","ACC-4521-XXXX",
+         "City Electric",22214.50,"2026-04-18T08:45:00Z","completed","Utilities"),
+        (1,"debit",14.99,"Amazon Prime Subscription","ACC-4521-XXXX",
+         "Amazon",22199.51,"2026-04-17T14:15:00Z","completed","Subscription"),
+        (1,"debit",200.00,"ATM Withdrawal","ACC-4521-XXXX",
+         "ATM #4821",21999.51,"2026-04-16T15:20:00Z","completed","Cash"),
+        (1,"debit",25.00,"Mobile Recharge — Verizon","ACC-4521-XXXX",
+         "Verizon",21974.51,"2026-04-15T18:10:00Z","completed","Mobile"),
+        (1,"credit",800.00,"Freelance Consulting Fee","ClientXYZ Corp",
+         "ACC-4521-XXXX",22774.51,"2026-04-14T10:00:00Z","completed","Income"),
+        (1,"debit",120.00,"Dining — The Capital Grille","ACC-4521-XXXX",
+         "Restaurant",22654.51,"2026-04-13T20:30:00Z","completed","Food"),
+        (1,"debit",45.00,"Netflix Subscription","ACC-4521-XXXX",
+         "Netflix",22609.51,"2026-04-12T08:00:00Z","completed","Subscription"),
+        (1,"debit",300.00,"Transfer — Mike Chen","ACC-4521-XXXX",
+         "ACC-3392-XXXX",22309.51,"2026-04-11T11:00:00Z","completed","Transfer"),
+
+        # ── SARAH KIM (user_id=2) ───────────────────────────────────────────
+        (2,"credit",4800.00,"Salary Credit — DesignCo LLC","DesignCo LLC",
+         "ACC-8821-XXXX",15200.50,"2026-04-22T09:00:00Z","completed","Income"),
+        (2,"credit",500.00,"Received Transfer — John Anderson","ACC-4521-XXXX",
+         "ACC-8821-XXXX",15700.50,"2026-04-20T11:35:00Z","completed","Transfer"),
+        (2,"debit",800.00,"Rent — April 2026","ACC-8821-XXXX",
+         "Park Avenue Realty",14900.50,"2026-04-21T09:00:00Z","completed","Housing"),
+        (2,"debit",320.00,"Online Shopping — Zara","ACC-8821-XXXX",
+         "Zara Store",14580.50,"2026-04-20T16:00:00Z","completed","Shopping"),
+        (2,"debit",450.00,"Grocery Shopping — Trader Joe's","ACC-8821-XXXX",
+         "Trader Joes",14130.50,"2026-04-19T12:30:00Z","completed","Food"),
+        (2,"debit",65.00,"Netflix & Spotify","ACC-8821-XXXX",
+         "Subscriptions",14065.50,"2026-04-18T08:00:00Z","completed","Subscription"),
+        (2,"debit",90.00,"Electricity & Gas Bill","ACC-8821-XXXX",
+         "ConEd",13975.50,"2026-04-17T09:00:00Z","completed","Utilities"),
+        (2,"debit",150.00,"ATM Withdrawal","ACC-8821-XXXX",
+         "ATM #2210",13825.50,"2026-04-16T14:00:00Z","completed","Cash"),
+        (2,"credit",300.00,"Design Project Bonus","DesignCo LLC",
+         "ACC-8821-XXXX",14125.50,"2026-04-15T10:00:00Z","completed","Income"),
+        (2,"debit",45.00,"Mobile Bill — AT&T","ACC-8821-XXXX",
+         "AT&T",14080.50,"2026-04-14T08:00:00Z","completed","Mobile"),
+        (2,"debit",200.00,"Dining — Le Bernardin","ACC-8821-XXXX",
+         "Restaurant",13880.50,"2026-04-13T19:30:00Z","completed","Food"),
+        (2,"debit",180.00,"Flight Ticket — Delta","ACC-8821-XXXX",
+         "Delta Airlines",13700.50,"2026-04-12T10:00:00Z","completed","Travel"),
+
+        # ── MIKE CHEN (user_id=3) ───────────────────────────────────────────
+        (3,"credit",3200.00,"Freelance Payment — StartupXYZ","StartupXYZ Inc",
+         "ACC-3392-XXXX",8750.00,"2026-04-22T10:00:00Z","completed","Income"),
+        (3,"credit",500.00,"Client Bonus — ABC Corp","ClientABC",
+         "ACC-3392-XXXX",9250.00,"2026-04-21T11:00:00Z","completed","Income"),
+        (3,"credit",300.00,"Received Transfer — John Anderson","ACC-4521-XXXX",
+         "ACC-3392-XXXX",9550.00,"2026-04-20T11:05:00Z","completed","Transfer"),
+        (3,"debit",950.00,"Rent — April 2026","ACC-3392-XXXX",
+         "Broadway Apartments",8600.00,"2026-04-21T09:00:00Z","completed","Housing"),
+        (3,"debit",180.00,"Grocery & Dining","ACC-3392-XXXX",
+         "Various",8420.00,"2026-04-20T19:00:00Z","completed","Food"),
+        (3,"debit",89.99,"Adobe Creative Cloud","ACC-3392-XXXX",
+         "Adobe",8330.01,"2026-04-19T08:00:00Z","completed","Subscription"),
+        (3,"debit",55.00,"Internet Bill — Comcast","ACC-3392-XXXX",
+         "Comcast",8275.01,"2026-04-18T09:00:00Z","completed","Utilities"),
+        (3,"debit",200.00,"ATM Withdrawal","ACC-3392-XXXX",
+         "ATM #1234",8075.01,"2026-04-17T14:00:00Z","completed","Cash"),
+        (3,"debit",35.00,"Mobile Recharge — T-Mobile","ACC-3392-XXXX",
+         "T-Mobile",8040.01,"2026-04-16T18:00:00Z","completed","Mobile"),
+        (3,"debit",120.00,"Online Shopping — Amazon","ACC-3392-XXXX",
+         "Amazon",7920.01,"2026-04-15T15:00:00Z","completed","Shopping"),
+        (3,"credit",250.00,"UI Design Contract","FreelanceClient",
+         "ACC-3392-XXXX",8170.01,"2026-04-14T10:00:00Z","completed","Income"),
+        (3,"debit",80.00,"Coffee & Lunch","ACC-3392-XXXX",
+         "Various",8090.01,"2026-04-13T13:00:00Z","completed","Food"),
     ]
 
     for txn in seed_transactions:
@@ -217,6 +259,15 @@ def init_db():
     conn.commit()
     conn.close()
     print("[DB] Database initialized with bait users and transactions!")
+
+def send_to_logstash(log_entry):
+    try:
+        s = socket.socket()
+        s.connect(("logstash", 5000))   # ✅ Docker service name
+        s.send((json.dumps(log_entry) + "\n").encode())
+        s.close()
+    except Exception as e:
+        print("Logstash send failed:", e)
 
 def log_attack(attack_type, severity, details="", username_tried="",
                password_tried="", target_user_id="", endpoint="",
@@ -239,23 +290,24 @@ def log_attack(attack_type, severity, details="", username_tried="",
 
     # Also write to log file for ELK
     log_entry = {
-        "event_id": str(uuid.uuid4()),
-        "timestamp": timestamp,
-        "honeypot_service": service,
-        "source_ip": request.remote_addr,
-        "attack_type": attack_type,
-        "username": username_tried,
-        "password": password_tried,
-        "endpoint": endpoint,
-        "severity": severity,
-        "details": details,
-        "protocol": "HTTP",
-        "environment": "honeypot-finance",
-        "project": "PRJN26-213"
+    "@timestamp": datetime.utcnow().isoformat() + "Z",  # ✅ FIX
+    "event_id": str(uuid.uuid4()),
+    "honeypot_service": service,
+    "source_ip": request.remote_addr,
+    "attack_type": attack_type,
+    "username": username_tried,
+    "password": password_tried,
+    "endpoint": endpoint,
+    "severity": severity,
+    "details": details,
+    "protocol": "HTTP",
+    "environment": "honeypot-finance",
+    "project": "PRJN26-213"
     }
     os.makedirs("/logs", exist_ok=True)
     with open("/logs/banking.log", "a") as f:
         f.write(json.dumps(log_entry) + "\n")
+    send_to_logstash(log_entry)
 
     print(f"[ATTACK] {attack_type} | {severity} | {request.remote_addr} | {username_tried}")
 
@@ -538,7 +590,7 @@ def transfer():
 
 @app.route("/transfer", methods=["POST"])
 def transfer_post():
-    """Normal transfer via JSON (from transfer form)"""
+    """Normal transfer via JSON — updates BOTH sender and recipient balances"""
     if not require_login():
         return jsonify({"error": "unauthorized"}), 401
 
@@ -548,34 +600,66 @@ def transfer_post():
 
     data = request.get_json(silent=True) or {}
     amount = float(data.get("amount", 0))
-    to_account = data.get("to_account", "")
+    to_account = data.get("to_account", "").strip()
     beneficiary = data.get("beneficiary_name", "Unknown")
     txn_id = str(uuid.uuid4())
+    timestamp = datetime.utcnow().isoformat() + "Z"
+
+    if amount <= 0:
+        return jsonify({"status": "error", "message": "Invalid amount"}), 400
+
+    if amount > user["balance"]:
+        return jsonify({"status": "error", "message": "Insufficient balance"}), 400
 
     conn = get_db()
-    if amount > 0 and amount <= user["balance"]:
-        new_balance = round(user["balance"] - amount, 2)
+
+    # ── Debit sender ──────────────────────────────────────────────────────────
+    sender_new_balance = round(float(user["balance"]) - float(amount), 2)
+    conn.execute("UPDATE users SET balance = ? WHERE id = ?",
+                 (sender_new_balance, user["id"]))
+    conn.execute('''INSERT INTO transactions
+        (user_id, type, amount, description, from_account,
+         to_account, balance_after, timestamp, status, category)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
+        user["id"], "debit", amount,
+        f"Transfer to {beneficiary}",
+        user["account_number"], to_account,
+        sender_new_balance, timestamp, "completed", "Transfer"
+    ))
+
+    # ── Credit recipient if they exist in our DB ──────────────────────────────
+    recipient = conn.execute(
+        "SELECT * FROM users WHERE account_number = ?", (to_account,)
+    ).fetchone()
+
+    if recipient:
+        recipient_new_balance = round(float(recipient["balance"]) + float(amount), 2)
         conn.execute("UPDATE users SET balance = ? WHERE id = ?",
-                     (new_balance, user["id"]))
+                     (recipient_new_balance, recipient["id"]))
         conn.execute('''INSERT INTO transactions
             (user_id, type, amount, description, from_account,
              to_account, balance_after, timestamp, status, category)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
-            user["id"], "debit", amount,
-            f"Transfer to {beneficiary}",
+            recipient["id"], "credit", amount,
+            f"Received from {user['full_name']}",
             user["account_number"], to_account,
-            new_balance,
-            datetime.utcnow().isoformat() + "Z",
-            "completed", "Transfer"
+            recipient_new_balance, timestamp, "completed", "Transfer"
         ))
-        conn.commit()
-        log_attack("TRANSFER_EXECUTED", "HIGH",
-                   username_tried=user["username"],
-                   target_user_id=user["id"],
-                   endpoint="/transfer",
-                   details=f"Transfer ${amount} to {beneficiary} ({to_account})")
+
+    conn.commit()
+
+    log_attack("TRANSFER_EXECUTED", "HIGH",
+               username_tried=user["username"],
+               target_user_id=user["id"],
+               endpoint="/transfer",
+               details=f"Transfer ${amount} from {user['account_number']} to {to_account} ({beneficiary})")
     conn.close()
-    return jsonify({"status": "success", "transaction_id": txn_id})
+    return jsonify({
+        "status": "success",
+        "transaction_id": txn_id,
+        "sender_balance": sender_new_balance,
+        "recipient_updated": recipient is not None
+    })
 
 # ===== CSRF VULNERABLE ENDPOINT =====
 # No CSRF token validation — intentional vulnerability!
@@ -619,6 +703,7 @@ def transfer_execute_csrf():
         result = {"status": "failed", "reason": "Invalid amount"}
     elif amount <= user["balance"]:
         new_balance = round(user["balance"] - amount, 2)
+        timestamp = datetime.utcnow().isoformat() + "Z"
         conn.execute("UPDATE users SET balance = ? WHERE id = ?",
                      (new_balance, user["id"]))
         conn.execute('''INSERT INTO transactions
@@ -628,10 +713,25 @@ def transfer_execute_csrf():
             user["id"], "debit", amount,
             f"CSRF Transfer to {beneficiary}",
             user["account_number"], to_account,
-            new_balance,
-            datetime.utcnow().isoformat() + "Z",
-            "completed", "CSRF-Transfer"
+            new_balance, timestamp, "completed", "CSRF-Transfer"
         ))
+        # Credit recipient if they exist
+        recipient = conn.execute(
+            "SELECT * FROM users WHERE account_number = ?", (to_account,)
+        ).fetchone()
+        if recipient:
+            recip_bal = round(recipient["balance"] + amount, 2)
+            conn.execute("UPDATE users SET balance = ? WHERE id = ?",
+                         (recip_bal, recipient["id"]))
+            conn.execute('''INSERT INTO transactions
+                (user_id, type, amount, description, from_account,
+                 to_account, balance_after, timestamp, status, category)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
+                recipient["id"], "credit", amount,
+                f"Received from {user['full_name']}",
+                user["account_number"], to_account,
+                recip_bal, timestamp, "completed", "Transfer"
+            ))
         conn.commit()
         result = {
             "status": "success",
@@ -1312,16 +1412,25 @@ def security_stats():
 
 # ===== ADMIN PANEL =====
 
-ADMIN_PASSWORD = "ZBankAdmin@2026"
+ADMIN_PASSWORD = "admin123"
 
 def require_admin():
-    return session.get("admin_logged_in")
+    return session.get("admin_logged_in") is True
 
 @app.route("/admin")
 def admin_login():
-    if require_admin():
-        return redirect("/admin/dashboard")
+    # Always show login page — never auto-redirect
+    # Force clear any stale admin session
+    session.pop("admin_logged_in", None)
+    session.pop("admin_ip", None)
     return render_template("admin_login.html")
+
+@app.route("/admin/check")
+def admin_check():
+    # Separate route for post-login redirect check
+    if session.get("admin_logged_in") is True:
+        return redirect("/admin/dashboard")
+    return redirect("/admin")
 
 @app.route("/admin/login", methods=["POST"])
 def admin_auth():
@@ -1329,14 +1438,13 @@ def admin_auth():
     if password == ADMIN_PASSWORD:
         session["admin_logged_in"] = True
         session["admin_ip"] = request.remote_addr
-        session.permanent = True
+        session.permanent = False  # Don't persist across browser close
         return redirect("/admin/dashboard")
     return render_template("admin_login.html", error="Invalid admin password")
 
 @app.route("/admin/logout")
 def admin_logout():
-    session.pop("admin_logged_in", None)
-    session.pop("admin_ip", None)
+    session.clear()
     return redirect("/admin")
 
 @app.route("/admin/dashboard")
@@ -1349,18 +1457,35 @@ def admin_dashboard():
     total_txns = conn.execute("SELECT COUNT(*) as c FROM transactions").fetchone()["c"]
     total_attacks = conn.execute("SELECT COUNT(*) as c FROM attack_logs").fetchone()["c"]
     total_sessions = conn.execute("SELECT COUNT(*) as c FROM sessions").fetchone()["c"]
-    high_attacks = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE severity='HIGH'").fetchone()["c"]
+    high_attacks = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE severity IN ('HIGH','CRITICAL')").fetchone()["c"]
+    medium_attacks = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE severity='MEDIUM'").fetchone()["c"]
+    low_attacks = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE severity='LOW'").fetchone()["c"]
     bait_hits = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE attack_type='BAIT_CREDENTIAL_USED'").fetchone()["c"]
+    idor_hits = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE attack_type LIKE 'IDOR%'").fetchone()["c"]
+    sqli_hits = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE attack_type LIKE 'SQL%'").fetchone()["c"]
+    api_hits = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE attack_type LIKE 'API%'").fetchone()["c"]
+    expo_hits = conn.execute("SELECT COUNT(*) as c FROM attack_logs WHERE attack_type LIKE 'DATA%'").fetchone()["c"]
     recent_activity = conn.execute("SELECT * FROM attack_logs ORDER BY timestamp DESC LIMIT 10").fetchall()
-    active_sessions = conn.execute("SELECT * FROM sessions WHERE is_active=1 ORDER BY login_time DESC").fetchall()
+    all_attacks = conn.execute("SELECT * FROM attack_logs ORDER BY timestamp DESC LIMIT 200").fetchall()
+    all_transactions = conn.execute("SELECT * FROM transactions ORDER BY timestamp DESC LIMIT 200").fetchall()
+    active_sessions = conn.execute("SELECT * FROM sessions ORDER BY login_time DESC LIMIT 50").fetchall()
+    top_ips = conn.execute(
+        "SELECT ip_address, COUNT(*) as count FROM attack_logs GROUP BY ip_address ORDER BY count DESC LIMIT 10"
+    ).fetchall()
     conn.close()
     return render_template("admin_dashboard.html",
         users=[dict(u) for u in users],
         total_users=total_users, total_txns=total_txns,
         total_attacks=total_attacks, total_sessions=total_sessions,
-        high_attacks=high_attacks, bait_hits=bait_hits,
+        high_attacks=high_attacks, medium_attacks=medium_attacks,
+        low_attacks=low_attacks, bait_hits=bait_hits,
+        idor_hits=idor_hits, sqli_hits=sqli_hits,
+        api_hits=api_hits, expo_hits=expo_hits,
         recent_activity=[dict(a) for a in recent_activity],
-        active_sessions=[dict(s) for s in active_sessions])
+        all_attacks=[dict(a) for a in all_attacks],
+        all_transactions=[dict(t) for t in all_transactions],
+        active_sessions=[dict(s) for s in active_sessions],
+        top_ips=[dict(i) for i in top_ips])
 
 @app.route("/admin/reset-balance", methods=["POST"])
 def admin_reset_balance():
@@ -1699,6 +1824,21 @@ def track_brute_force():
         )
     return jsonify({"status": "tracked"})
 
+
+@app.route("/admin/api/user-transactions")
+def admin_user_transactions():
+    if not session.get("admin_logged_in"):
+        return jsonify({"error": "unauthorized"}), 401
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"error": "missing user_id"}), 400
+    conn = get_db()
+    txns = conn.execute(
+        "SELECT * FROM transactions WHERE user_id = ? ORDER BY timestamp DESC",
+        (user_id,)
+    ).fetchall()
+    conn.close()
+    return jsonify({"transactions": [dict(t) for t in txns]})
 
 if __name__ == "__main__":
     init_db()

@@ -17,7 +17,7 @@ services:
       - "8080:8080"
     volumes:
       - banking_data:/data
-      - ./logs:/logs
+      - ./logs:/logs   # ✅ logs generated here
     restart: always
     networks:
       - honeypot-net
@@ -54,24 +54,26 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    restart: always
     networks:
       - honeypot-net
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.11.0
     container_name: logstash
+    user: root
     ports:
-      - "5044:5044"
+      - "5000:5000"
     volumes:
       - ./elk/logstash/pipeline:/usr/share/logstash/pipeline
-      - ./logs:/logs
+      - ./logs:/logs   # 🔥 CRITICAL FIX
     depends_on:
       - elasticsearch
+    restart: always
     networks:
       - honeypot-net
 
@@ -84,5 +86,6 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
       - elasticsearch
+    restart: always
     networks:
       - honeypot-net

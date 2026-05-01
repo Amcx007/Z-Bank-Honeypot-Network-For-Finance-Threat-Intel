@@ -458,7 +458,7 @@
                     <div class="card-row3">
                         <div class="card-left-info">
                             <div class="card-label-small" style="color:rgba(255,255,255,0.4);">Card Holder</div>
-                            <div class="card-holder" style="color:rgba(255,255,255,0.85);">John Anderson</div>
+                            <div class="card-holder" style="color:rgba(255,255,255,0.85);">{{ user.full_name }}</div>
                         </div>
                         <div class="card-right-info">
                             <div class="card-label-small" style="color:rgba(255,255,255,0.4);">Expires</div>
@@ -478,7 +478,7 @@
                     <div class="card-row3">
                         <div class="card-left-info">
                             <div class="card-label-small dark-text">Card Holder</div>
-                            <div class="card-holder dark-text">John Anderson</div>
+                            <div class="card-holder dark-text">{{ user.full_name }}</div>
                         </div>
                         <div class="card-right-info">
                             <div class="card-label-small dark-text">Expires</div>
@@ -498,7 +498,7 @@
                     <div class="card-row3">
                         <div class="card-left-info">
                             <div class="card-label-small" style="color:rgba(255,255,255,0.35);">Card Holder</div>
-                            <div class="card-holder" style="color:rgba(255,255,255,0.75);">John Anderson</div>
+                            <div class="card-holder" style="color:rgba(255,255,255,0.75);">{{ user.full_name }}</div>
                         </div>
                         <div class="card-right-info">
                             <div class="card-label-small" style="color:rgba(255,255,255,0.35);">Expires</div>
@@ -521,7 +521,7 @@
         <div class="card-tabs">
             <button class="card-tab active" id="tab1" onclick="selectCard(1)">
                 <span class="tab-dot" style="background:#555;"></span>
-                Savings Debit ••4521
+                {{ user.account_number[-4:] }} Debit ••4521
             </button>
             <button class="card-tab" id="tab2" onclick="selectCard(2)">
                 <span class="tab-dot" style="background:var(--accent);"></span>
@@ -583,7 +583,7 @@
                     </div>
                     <div class="card-detail-row">
                         <span class="cd-label">Card Holder</span>
-                        <span class="cd-val">John Anderson</span>
+                        <span class="cd-val">{{ user.full_name }}</span>
                     </div>
                     <div class="card-detail-row">
                         <span class="cd-label">Expiry Date</span>
@@ -595,7 +595,7 @@
                     </div>
                     <div class="card-detail-row">
                         <span class="cd-label">Linked Account</span>
-                        <span class="cd-val">Savings •••• 4521</span>
+                        <span class="cd-val">{{ user.account_type|capitalize }} •••• {{ user.account_number[-4:] }}</span>
                     </div>
                     <div class="card-detail-row">
                         <span class="cd-label">Daily Limit</span>
